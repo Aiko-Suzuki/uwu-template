@@ -98,7 +98,7 @@ for (let i = 0; i < 5000; i++) {
 const data_7k: item[] = [];
 
 // randomly fill the data array with item
-for (let i = 0; i < 7500; i++) {
+for (let i = 0; i < 10000; i++) {
 	data_7k.push({
 		title: "Test Title " + i,
 		slug: "test-title-" + i,
@@ -108,67 +108,50 @@ for (let i = 0; i < 7500; i++) {
 		visible: true,
 	});
 }
-
-const foreachtemplate = compile(`{#foreach this}${template}{/foreach}`);
+const foreachtemp = `{#foreach this}${template}{/foreach}`;
+const foreachtemplate = compile(foreachtemp);
 const compiletemplate = compile(template);
 
 
 
 // 100 benchmark
-Deno.bench("[100] renderTemplate built in", async () => {
-	foreachtemplate(data_100);
+Deno.bench("[100] renderTemplate", async () => {
+    await renderTemplate("100 test", data_100, foreachtemp);
 });
-Deno.bench("[100] renderTemplate manual", async () => {
-    data_100.forEach(async (item) => {
-        compiletemplate(item);
-    });
-});
-Deno.bench("[100] renderTemplate hbs", async () => {
+
+Deno.bench("[100] handlebars", async () => {
 	await handle.render(hbs_template, {
         data: data_100,
     });
 });
 
 // 500 benchmark
-Deno.bench("[500] renderTemplate built in", async () => {
-	foreachtemplate(data_500);
+Deno.bench("[500] renderTemplate", async () => {
+	await renderTemplate("500 test", data_500, foreachtemp);
 });
-Deno.bench("[500] renderTemplate manual", async () => {
-    data_500.forEach(async (item) => {
-        compiletemplate(item);
-    });
-});
-Deno.bench("[500] renderTemplate hbs", async () => {
+
+Deno.bench("[500] handlebars", async () => {
 	await handle.render(hbs_template, {
         data: data_500,
     });
 });
 
 // 1k benchmark
-Deno.bench("[1k] renderTemplate built in", async () => {
-	foreachtemplate(data_1k);
+Deno.bench("[1k] renderTemplate", async () => {
+	await renderTemplate("1k test", data_1k, foreachtemp);
 });
-Deno.bench("[1k] renderTemplate manual", async () => {
-    data_1k.forEach(async (item) => {
-        compiletemplate(item);
-    });
-});
-Deno.bench("[1k] renderTemplate hbs", async () => {
+
+Deno.bench("[1k] handlebars", async () => {
 	await handle.render(hbs_template, {
         data: data_1k,
     });
 });
 
 // 5k benchmark
-Deno.bench("[5k] renderTemplate built in", async () => {
-	foreachtemplate(data_5k);
+Deno.bench("[5k] renderTemplate", async () => {
+	await renderTemplate("5k test", data_5k, foreachtemp);
 });
-Deno.bench("[5k] renderTemplate manual", async () => {
-    data_5k.forEach(async (item) => {
-        compiletemplate(item);
-    });
-});
-Deno.bench("[5k] renderTemplate hbs", async () => {
+Deno.bench("[5k] handlebars", async () => {
 	await handle.render(hbs_template, {
         data: data_5k,
     });
@@ -176,15 +159,10 @@ Deno.bench("[5k] renderTemplate hbs", async () => {
 
 
 // 7.5k benchmark
-Deno.bench("[7k] renderTemplate built in", async () => {
-	foreachtemplate(data_7k);
+Deno.bench("[10k] renderTemplate", async () => {
+	await renderTemplate("10k test", data_7k, foreachtemp);
 });
-Deno.bench("[7k] renderTemplate manual", async () => {
-    data_7k.forEach(async (item) => {
-        compiletemplate(item);
-    });
-});
-Deno.bench("[7k] renderTemplate hbs", async () => {
+Deno.bench("[10k] handlebars", async () => {
 	await handle.render(hbs_template, {
         data: data_7k,
     });
