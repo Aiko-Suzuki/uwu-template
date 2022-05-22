@@ -1,5 +1,5 @@
 import { renderTemplate,compile } from "./mod.ts";
-const template = Deno.readTextFileSync("test.nnt");
+const template = Deno.readTextFileSync("bench/test.nnt");
 interface item {
 	title: string;
 	slug: string;
