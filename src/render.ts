@@ -16,12 +16,12 @@ const helpers:Record<string,any> = {
 
 function renderString(item: item, data: any) {
 	// check for action
-    const var_ = item.var as string;
-    const split = var_.split(" ");
-    const action = split[0];
-    const var_name = split[1];
+    // const var_ = item.var as string;
+    // const split = var_.split(" ");
+    // const action = split[0];
+    // const var_name = split[1];
 
-	return helpers[action]?.(data[var_name]) ?? data[var_];
+	return  data[item.var as string];
 }
 function renderBlock(block: block, data: any) {
 	const condition_type = block.block_start;
