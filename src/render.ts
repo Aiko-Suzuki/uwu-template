@@ -2,26 +2,26 @@
 import { item, block } from "./interface.ts";
 import { parse } from "./parser.ts";
 
-const helpers:Record<string,any> = {
-    formatdate: (date: string) => {
-        const d = new Date(date);
-        const h = d.getUTCHours();
-        const m = d.getUTCMinutes();
-        const y = d.getUTCFullYear();
-        const M = d.getUTCMonth() + 1;
-        const D = d.getUTCDate();
-        return `${h < 10 ? "0" + h : h}:${m < 10 ? "0" + m : m} ${y}-${M < 10 ? "0" + M : M}-${D < 10 ? "0" + D : D}`;
-    }
-}
+const helpers: Record<string, any> = {
+	formatdate: (date: string) => {
+		const d = new Date(date);
+		const h = d.getUTCHours();
+		const m = d.getUTCMinutes();
+		const y = d.getUTCFullYear();
+		const M = d.getUTCMonth() + 1;
+		const D = d.getUTCDate();
+		return `${h < 10 ? "0" + h : h}:${m < 10 ? "0" + m : m} ${y}-${M < 10 ? "0" + M : M}-${D < 10 ? "0" + D : D}`;
+	},
+};
 
 function renderString(item: item, data: any) {
 	// check for action
-    // const var_ = item.var as string;
-    // const split = var_.split(" ");
-    // const action = split[0];
-    // const var_name = split[1];
+	// const var_ = item.var as string;
+	// const split = var_.split(" ");
+	// const action = split[0];
+	// const var_name = split[1];
 
-	return  data[item.var as string];
+	return data[item.var as string];
 }
 function renderBlock(block: block, data: any) {
 	const condition_type = block.block_start;

@@ -11,9 +11,9 @@ interface item {
 	title: string;
 	childs?: item[];
 	content?: any;
-    var ?: string;
-	type: "block" | "item" | "string" | "foreach" | "var" |"list";
-    index?: number;
-    index_end?: number;
+	var?: string;
+	type: "block" | "item" | "string" | "foreach" | "var" | "list";
+	index?: number;
+	index_end?: number;
 }
-export type {item, block};
+export type { item, block };
