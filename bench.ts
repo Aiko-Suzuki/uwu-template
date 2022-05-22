@@ -1,5 +1,4 @@
-// deno-lint-ignore-file require-await
-import { renderTemplate,compile } from "./mod.ts";
+import { renderTemplate } from "./mod.ts";
 import { Handlebars } from "https://deno.land/x/handlebars@v0.8.0/mod.ts";
 
 // First, create instance of Handlebars
@@ -109,9 +108,6 @@ for (let i = 0; i < 10000; i++) {
 	});
 }
 const foreachtemp = `{#foreach this}${template}{/foreach}`;
-const foreachtemplate = compile(foreachtemp);
-const compiletemplate = compile(template);
-
 
 
 // 100 benchmark
