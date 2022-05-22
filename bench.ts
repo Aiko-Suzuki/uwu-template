@@ -175,21 +175,6 @@ Deno.bench("[5k] renderTemplate hbs", async () => {
 });
 
 
-// 5k benchmark
-Deno.bench("[5k] renderTemplate built in", async () => {
-	foreachtemplate(data_5k);
-});
-Deno.bench("[5k] renderTemplate manual", async () => {
-    data_5k.forEach(async (item) => {
-        compiletemplate(item);
-    });
-});
-Deno.bench("[5k] renderTemplate hbs", async () => {
-	await handle.render(hbs_template, {
-        data: data_5k,
-    });
-});
-
 // 7.5k benchmark
 Deno.bench("[7k] renderTemplate built in", async () => {
 	foreachtemplate(data_7k);
