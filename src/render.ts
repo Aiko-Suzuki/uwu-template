@@ -13,15 +13,19 @@ const helpers: Record<string, any> = {
 		return `${h < 10 ? "0" + h : h}:${m < 10 ? "0" + m : m} ${y}-${M < 10 ? "0" + M : M}-${D < 10 ? "0" + D : D}`;
 	},
 };
+const render_cache: Record<string, any> = {};
 
 function renderString(item: item, data: any) {
-	// check for action
-	// const var_ = item.var as string;
-	// const split = var_.split(" ");
-	// const action = split[0];
-	// const var_name = split[1];
-
-	return data[item.var as string];
+	//check for action
+	const var_ = item.var as string;
+	if (!render_cache[var_]) {
+		const split = var_.split(" ");
+		const action = split[0];
+		const var_name = split[1];
+		const fn = helpers[action] ? (data: any) => helpers[action](data[var_name]) : (data: any) => data[var_];
+		render_cache[var_] = fn;
+	}
+	return render_cache[var_](data);
 }
 function renderBlock(block: block, data: any) {
 	const condition_type = block.block_start;

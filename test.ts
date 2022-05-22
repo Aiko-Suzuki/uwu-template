@@ -12,7 +12,7 @@ interface item {
 const data_100: item[] = [];
 
 // randomly fill the data array with item
-for (let i = 0; i < 1000; i++) {
+for (let i = 0; i < 15; i++) {
 	data_100.push({
 		title: "Test Title " + i,
 		slug: "test-title-" + i,
