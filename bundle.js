@@ -2,14 +2,15 @@
 // deno-lint-ignore-file
 // This code was bundled using `deno bundle` and it's not recommended to edit it manually
 
-const item_reg = /\{!(.*?)\}/g;
-const block_reg = /{#(?<block_start>.*?) (?<block_value>.*?)}(?<block_content>.*?)(?:{else}(?<block_content_2>.*?))?{\/\k<block_start>}/gms;
+const ITEM_PARSING_REGEX = /\{{(.*?)}}/g;
+const BLOCK_PARSING_REGEX = /{{#(?<block_start>.*?) (?<block_value>.*?)}}(?<block_content>.*?){{\/\k<block_start>}}/gms;
+const BLOCK_INSIDE_REGEX = /(?:{{(?<block_start>.*?)(?: (?<block_value>.*?))}})?(?<block_content>.*?)?{{(?:(?<block_next>.*?|\/.*?))}}/gms;
 function parseString(template) {
     const items = [];
     let template_left = template;
     let m;
     let true_index = 0;
-    while((m = item_reg.exec(template_left)) != null){
+    while((m = ITEM_PARSING_REGEX.exec(template_left)) != null){
         if (!m) break;
         const start = m.index;
         const end = m.index + m[0].length;
@@ -21,7 +22,7 @@ function parseString(template) {
             index_end: true_index + end
         };
         const before = template_left.substring(0, item.index);
-        if (item_reg.test(before)) {
+        if (ITEM_PARSING_REGEX.test(before)) {
             items.push({
                 title: "before_block",
                 content: parseString(before),
@@ -54,11 +55,35 @@ function parseString(template) {
     });
     return items;
 }
+function parseBlock(template) {
+    const blocks = [];
+    let m;
+    let gtype = false;
+    let lastype = "";
+    let lastcondition = "";
+    while((m = BLOCK_INSIDE_REGEX.exec(template)) !== null){
+        if (!m) break;
+        lastype = m.groups?.block_start ? m.groups?.block_start.replace("#", "") : undefined ?? lastype;
+        lastcondition = m.groups?.block_value ?? lastcondition;
+        if (!gtype) gtype = m.groups?.block_start.replace("#", "") ?? false;
+        const block = {
+            type: lastype,
+            content: parse(m.groups?.block_content ?? ""),
+            condition: lastcondition ? new Function("data", `return ${lastcondition}`) : undefined,
+            str_condition: lastcondition
+        };
+        blocks.push(block);
+        const split = m.groups?.block_next?.split(" ") ?? [];
+        lastype = split[1] ? split[0].replace("#", "") : split[0] || "";
+        lastcondition = split.slice(1).join(" ") || "";
+    }
+    return blocks;
+}
 function parse(template) {
     const blocks = [];
     const items = [];
     let template_left = template;
-    const match = template.matchAll(block_reg);
+    const match = template.matchAll(BLOCK_PARSING_REGEX);
     for (const m of match){
         const groups = m.groups;
         switch(groups?.block_start){
@@ -67,19 +92,18 @@ function parse(template) {
                     blocks.push({
                         block_start: groups.block_start,
                         block_value: groups.block_value,
-                        block_content: parse(groups.block_content),
-                        block_content_2: groups.block_content_2 != undefined ? parse(groups.block_content_2) : "",
+                        block_content: parseBlock(m[0]),
                         index: m.index,
                         index_end: m.index + m[0].length
                     });
                     break;
                 }
-            case "foreach":
+            case "each":
                 {
                     blocks.push({
                         block_start: groups.block_start,
                         block_value: groups.block_value,
-                        block_content: parse(groups.block_content + (groups.block_content_2 ? "{else}" + groups.block_content_2 : "")),
+                        block_content: parse(groups.block_content),
                         index: m.index,
                         index_end: m.index + m[0].length
                     });
@@ -97,7 +121,7 @@ function parse(template) {
         items.push({
             title: "block",
             content: block,
-            type: block.block_start == "foreach" ? "foreach" : "block"
+            type: block.block_start == "each" ? "each" : "block"
         });
         template_left = template_left.substring(block.index_end);
         if (index === blocks.length - 1) {
@@ -157,8 +181,19 @@ function renderBlock(block, data) {
     switch(condition_type){
         case "if":
             {
-                const result = new Function("data", "return " + block.block_value).apply(data) ? block.block_content : block.block_content_2;
-                return render(result.childs?.[0] || "", data);
+                let found = false;
+                const childs = block.block_content;
+                while(childs.length !== 0){
+                    const child = childs.shift();
+                    if (child.condition) found = child.condition.apply(data);
+                    if (found) return render(child.content, data);
+                    if (childs.length === 0) {
+                        if (!child.condition) {
+                            return render(child.content, data);
+                        }
+                    }
+                }
+                break;
             }
         default:
             throw new Error("Unknown block type: " + condition_type);
@@ -186,7 +221,7 @@ function render(tree, data) {
         case "block":
             html += renderBlock(tree.content, data);
             break;
-        case "foreach":
+        case "each":
             html += renderForeach(tree.content, data);
             break;
         case "string":
@@ -200,6 +235,11 @@ function render(tree, data) {
                 html += render(item, data);
             }
             break;
+        case "item":
+            for (const item1 of tree.childs){
+                html += render(item1, data);
+            }
+            break;
         default:
             html += tree.content;
             break;
@@ -208,6 +248,7 @@ function render(tree, data) {
 }
 function compile(template) {
     const tree = parse(template);
+    Deno.writeTextFileSync("./tree.json", JSON.stringify(tree, null, 2));
     const compiled = function(data) {
         let result = "";
         for (const item of tree.childs){

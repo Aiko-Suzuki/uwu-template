@@ -26,13 +26,13 @@
         {{#elseif this.visible === "2"}}
         <div class="main__table-text main__table-text--red">Not visible</div>
         {{#elseif this.visible === "3"}}
-         <div class="main__table-text main__table-text--red">Secrect</div>
+        <div class="main__table-text main__table-text--red">Secrect</div>
         {{else}}
         <div class="main__table-text main__table-text--red">Hidden</div>
         {{/if}}
     </td>
     <td>
-        <div class="main__table-text">{{startdate}}</div>
+        <div class="main__table-text">{{formatdate startdate}}</div>
     </td>
     <td>
         <div class="main__table-btns">
