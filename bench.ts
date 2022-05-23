@@ -1,8 +1,6 @@
 import * as nnt from "./mod.ts";
 import { Handlebars } from "https://deno.land/x/handlebars@v0.8.0/mod.ts";
 
-// First, create instance of Handlebars
-
 // format date to hour:minute yyyy-mm-dd
 
 const formatdate = (date: string) => {
@@ -15,6 +13,7 @@ const formatdate = (date: string) => {
     return `${h < 10 ? "0" + h : h}:${m < 10 ? "0" + m : m} ${y}-${M < 10 ? "0" + M : M}-${D < 10 ? "0" + D : D}`;
 }
 
+// create instance of Handlebars
 const handle = new Handlebars({
     baseDir: 'bench',
     extname: '.hbs',
