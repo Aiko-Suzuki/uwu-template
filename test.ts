@@ -16,14 +16,15 @@ nnt.registerHelper("formatdate",formatdate);
 const data_100 = [];
 
 // randomly fill the data array with item
-for (let i = 0; i < 100; i++) {
+for (let i = 0; i < 1000; i++) {
 	data_100.push({
 		title: "Test Title " + i,
 		slug: "test-title-" + i,
 		id: i,
 		type: "TV",
 		startdate: "2020-01-01",
-		visible: "3",
+        // random asing 1 , 2 or 3
+		visible: `${Math.floor(Math.random() * 3) + 1}`,
 	});
 }
 const template_compiled = nnt.compile(`${template}`);

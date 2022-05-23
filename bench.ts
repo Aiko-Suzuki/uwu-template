@@ -32,89 +32,36 @@ nnt.registerHelper("formatdate",formatdate);
 const template = Deno.readTextFileSync("bench/test.nnt");
 const hbs_template = "bench/test.hbs";
 
+
+const nnt_template = nnt.compile(`${template}`);
+
 interface item {
 	title: string;
 	slug: string;
 	id: number;
 	type: string;
 	startdate: string;
-	visible: boolean;
+	visible: string;
+}
+function generateArray(number:number){
+    const data: item[] = [];
+    for (let i = 0; i < number; i++) {
+        data.push({
+            title: "Test Title " + i,
+            slug: "test-title-" + i,
+            id: i,
+            type: "post",
+            startdate: new Date(new Date().getTime() - Math.floor(Math.random() * 10000000000)).toISOString().slice(0, 10),
+            visible: `${Math.floor(Math.random() * 3) + 1}`,
+        });
+    }
+    return data;
 }
 
-const data_100: item[] = [];
-
-// randomly fill the data array with item
-for (let i = 0; i < 100; i++) {
-	data_100.push({
-		title: "Test Title " + i,
-		slug: "test-title-" + i,
-		id: i,
-		type: "post",
-		startdate: "2020-01-01",
-		visible: true,
-	});
-}
-
-const data_500: item[] = [];
-
-// randomly fill the data array with item
-for (let i = 0; i < 500; i++) {
-	data_500.push({
-		title: "Test Title " + i,
-		slug: "test-title-" + i,
-		id: i,
-		type: "post",
-		startdate: "2020-01-01",
-		visible: true,
-	});
-}
-
-const data_1k: item[] = [];
-
-// randomly fill the data array with item
-for (let i = 0; i < 1000; i++) {
-	data_1k.push({
-		title: "Test Title " + i,
-		slug: "test-title-" + i,
-		id: i,
-		type: "post",
-		startdate: "2020-01-01",
-		visible: true,
-	});
-}
-
-const data_5k: item[] = [];
-
-// randomly fill the data array with item
-for (let i = 0; i < 5000; i++) {
-	data_5k.push({
-		title: "Test Title " + i,
-		slug: "test-title-" + i,
-		id: i,
-		type: "post",
-		startdate: "2020-01-01",
-		visible: true,
-	});
-}
-
-const data_7k: item[] = [];
-
-// randomly fill the data array with item
-for (let i = 0; i < 10000; i++) {
-	data_7k.push({
-		title: "Test Title " + i,
-		slug: "test-title-" + i,
-		id: i,
-		type: "post",
-		startdate: "2020-01-01",
-		visible: true,
-	});
-}
-
-
+const data_100 = generateArray(100);
 // 100 benchmark
-Deno.bench("[100] renderTemplate", async () => {
-    await nnt.renderTemplate("100 test", data_100, template);
+Deno.bench("[100] renderTemplate",() => {
+    nnt_template(data_100);
 });
 
 Deno.bench("[100] handlebars", async () => {
@@ -123,9 +70,10 @@ Deno.bench("[100] handlebars", async () => {
     });
 });
 
+const data_500 = generateArray(500);
 // 500 benchmark
-Deno.bench("[500] renderTemplate", async () => {
-	await nnt.renderTemplate("500 test", data_500, template);
+Deno.bench("[500] renderTemplate", () => {
+	nnt_template(data_500);
 });
 
 Deno.bench("[500] handlebars", async () => {
@@ -134,9 +82,10 @@ Deno.bench("[500] handlebars", async () => {
     });
 });
 
+const data_1k = generateArray(1000);
 // 1k benchmark
-Deno.bench("[1k] renderTemplate", async () => {
-	await nnt.renderTemplate("1k test", data_1k, template);
+Deno.bench("[1k] renderTemplate", () => {
+	nnt_template(data_1k);
 });
 
 Deno.bench("[1k] handlebars", async () => {
@@ -145,9 +94,10 @@ Deno.bench("[1k] handlebars", async () => {
     });
 });
 
+const data_5k = generateArray(5000);
 // 5k benchmark
-Deno.bench("[5k] renderTemplate", async () => {
-	await nnt.renderTemplate("5k test", data_5k, template);
+Deno.bench("[5k] renderTemplate", () => {
+	nnt_template(data_5k);
 });
 Deno.bench("[5k] handlebars", async () => {
 	await handle.render(hbs_template, {
@@ -156,12 +106,13 @@ Deno.bench("[5k] handlebars", async () => {
 });
 
 
-// 7.5k benchmark
-Deno.bench("[10k] renderTemplate", async () => {
-	await nnt.renderTemplate("10k test", data_7k, template);
+const data_10k = generateArray(10000);
+// 10k benchmark
+Deno.bench("[10k] renderTemplate", () => {
+	nnt_template(data_10k);
 });
 Deno.bench("[10k] handlebars", async () => {
 	await handle.render(hbs_template, {
-        data: data_7k,
+        data: data_10k,
     });
 });

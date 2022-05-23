@@ -1,6 +1,7 @@
-// deno-lint-ignore-file no-explicit-any no-cond-assign
-import { item, block } from "./interface.ts";
+// deno-lint-ignore-file no-explicit-any no-cond-assign ban-unused-ignore no-fallthrough
+import { item, block, block_inside } from "./interface.ts";
 import { parse } from "./parser.ts";
+const CONDITION_VALUE_REGEX = /this\.(.*?)(?!\S)/gms;
 
 const helpers: Record<string, any> = {};
 
@@ -22,55 +23,52 @@ function escape(text: string): string {
 }
 const render_cache: Record<string, any> = {};
 
-function renderString(item: item, data: any) {
-	//check for action
-	const var_ = item.var as string;
-	if (!render_cache[var_]) {
-		const split = var_.split(" ");
-		const action = split[0];
-		const var_name = split[1];
-		const fn = helpers[action] ? (data: any) => helpers[action](data[var_name]) : (data: any) =>  data[var_];
-		render_cache[var_] = fn;
-	}
-	return render_cache[var_](data);
-}
-function renderBlock(block: block, data: any) {
-	const condition_type = block.block_start;
+const ss = (name: string) => {
+	const split = name.split(" "),
+		action = split[0],
+        key = split[1],
+        helper = helpers[action];
+	render_cache[name] = helper ? (data: any) => helper(data[key]) : (data: any) => data[name];
+};
 
-	switch (condition_type) {
+function renderString(item: item, data: any) {
+	let result = "";
+	render_cache[item.var as string] ? (result = render_cache[item.var as string](data)) : ss(item.var as string);
+	return result;
+}
+
+function renderBlock(block: block, data: any) {
+	// generate unique key for condition
+	switch (block.block_start) {
 		case "if": {
-            let i = 0;
-            let child;
-            while (child = block.block_content[i++]) {
-                switch (child.condition && child.condition.apply(data)) {
-                    case false:
-                        break;
-                    default:
-                        return render(child.content, data);
-                }
-            }
+			let i = 0;
+			let child;
+			while ((child = block.block_content[i++])) {
+				switch (child.condition && child.condition.apply(data)) {
+					case true:
+						return render(child.content, data);
+				}
+			}
 			break;
 		}
 		default:
-			throw new Error("Unknown block type: " + condition_type);
+			throw new Error("Unknown block type: " + block.block_start);
 	}
 }
 
 function renderForeach(block: block, data: any) {
-	const childs = block.block_content.childs;
 	const value = block.block_value == "this" ? data : data[block.block_value];
-
-	if (!value) return "";
 	let result = "";
 
-	for (const item of value) {
-		const ch = [...childs];
-		while (ch.length) {
-			const child = ch.shift();
+	let i = 0,
+		e = 0;
+	let item, child;
+	while ((item = value[i++])) {
+		while ((child = block.block_content.childs[e++])) {
 			result += render(child, item);
 		}
+		e = 0;
 	}
-
 	return result;
 }
 
@@ -81,6 +79,7 @@ function render(tree: item, data: any) {
 			html += renderBlock(tree.content, data);
 			break;
 		case "each":
+			if (data.length == 0) break;
 			html += renderForeach(tree.content, data);
 			break;
 		case "string":
@@ -94,7 +93,7 @@ function render(tree: item, data: any) {
 				html += render(item, data);
 			}
 			break;
-        case "item":
+		case "item":
 			for (const item of tree.childs as item[]) {
 				html += render(item, data);
 			}
@@ -136,6 +135,5 @@ registerHelper("json", (data: any) => {
 registerHelper("escape", (data: any) => {
 	return escape(data.toString());
 });
-
 
 export { renderTemplate, compile, registerHelper };

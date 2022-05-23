@@ -163,53 +163,45 @@ function escape(text) {
     });
 }
 const render_cache = {};
-function renderString(item, data1) {
-    const var_ = item.var;
-    if (!render_cache[var_]) {
-        const split = var_.split(" ");
-        const action = split[0];
-        const var_name = split[1];
-        const fn = helpers[action] ? (data)=>helpers[action](data[var_name])
-         : (data)=>data[var_]
-        ;
-        render_cache[var_] = fn;
-    }
-    return render_cache[var_](data1);
+const ss = (name)=>{
+    const split = name.split(" "), action = split[0], key = split[1], helper = helpers[action];
+    render_cache[name] = helper ? (data)=>helper(data[key])
+     : (data)=>data[name]
+    ;
+};
+function renderString(item, data) {
+    let result = "";
+    render_cache[item.var] ? result = render_cache[item.var](data) : ss(item.var);
+    return result;
 }
 function renderBlock(block, data) {
-    const condition_type = block.block_start;
-    switch(condition_type){
+    switch(block.block_start){
         case "if":
             {
                 let i = 0;
                 let child;
                 while(child = block.block_content[i++]){
                     switch(child.condition && child.condition.apply(data)){
-                        case false:
-                            break;
-                        default:
+                        case true:
                             return render(child.content, data);
                     }
                 }
                 break;
             }
         default:
-            throw new Error("Unknown block type: " + condition_type);
+            throw new Error("Unknown block type: " + block.block_start);
     }
 }
 function renderForeach(block, data) {
-    const childs = block.block_content.childs;
     const value = block.block_value == "this" ? data : data[block.block_value];
-    if (!value) return "";
     let result = "";
-    for (const item of value){
-        const ch = [
-            ...childs
-        ];
-        while(ch.length){
-            const child = ch.shift();
+    let i = 0, e = 0;
+    let item, child;
+    while(item = value[i++]){
+        while(child = block.block_content.childs[e++]){
             result += render(child, item);
         }
+        e = 0;
     }
     return result;
 }
@@ -220,6 +212,7 @@ function render(tree, data) {
             html += renderBlock(tree.content, data);
             break;
         case "each":
+            if (data.length == 0) break;
             html += renderForeach(tree.content, data);
             break;
         case "string":
