@@ -34,7 +34,7 @@ for (let i = 0; i < 15; i++) {
 		visible: true,
 	});
 }
-const template_compiled = nnt.compile(`{#foreach this}${template}{/foreach}`);
+const template_compiled = nnt.compile(`${template}`);
 
 const performance_start = performance.now();
 const res = template_compiled(data_100);

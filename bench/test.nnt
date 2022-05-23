@@ -1,3 +1,4 @@
+{#foreach this}
 <tr id="list_item">
     <td>
         <div class="main__user">
@@ -43,3 +44,4 @@
         </div>
     </td>
 </tr>
+{/foreach}
