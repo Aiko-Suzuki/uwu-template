@@ -178,12 +178,17 @@ function renderBlock(block, data) {
     switch(block.block_start){
         case "if":
             {
-                let i = 0;
-                let child;
+                let i = 0, child;
                 while(child = block.block_content[i++]){
-                    switch(child.condition && child.condition.apply(data)){
-                        case true:
+                    switch(child.condition){
+                        case undefined:
                             return render(child.content, data);
+                        default:
+                            switch(child.condition.apply(data)){
+                                case true:
+                                    return render(child.content, data);
+                            }
+                            break;
                     }
                 }
                 break;
