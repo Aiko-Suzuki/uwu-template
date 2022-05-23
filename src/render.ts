@@ -5,9 +5,21 @@ import { parse } from "./parser.ts";
 const helpers: Record<string, any> = {};
 
 function registerHelper(name: string, fn: any) {
-    helpers[name] = fn;
+	helpers[name] = fn;
 }
 
+function escape(text: string): string {
+	const entity: { [char: string]: string } = {
+		"<": "&lt;",
+		">": "&gt;",
+		"&": "&amp;",
+		"'": "&#39;",
+		'"': "&#34;",
+	};
+	return text.replaceAll(/[&<>"']/g, (char) => {
+		return entity[char];
+	});
+}
 const render_cache: Record<string, any> = {};
 
 function renderString(item: item, data: any) {
@@ -17,7 +29,7 @@ function renderString(item: item, data: any) {
 		const split = var_.split(" ");
 		const action = split[0];
 		const var_name = split[1];
-		const fn = helpers[action] ? (data: any) => helpers[action](data[var_name]) : (data: any) => data[var_];
+		const fn = helpers[action] ? (data: any) => helpers[action](data[var_name]) : (data: any) =>  data[var_];
 		render_cache[var_] = fn;
 	}
 	return render_cache[var_](data);
@@ -103,5 +115,14 @@ function renderTemplate(key: string, data: any, template: string) {
 	compiled_list.set(key, compiled);
 	return compiled(data);
 }
+
+registerHelper("json", (data: any) => {
+	return JSON.stringify(data);
+});
+
+registerHelper("escape", (data: any) => {
+	return escape(data.toString());
+});
+
 
 export { renderTemplate, compile, registerHelper };
