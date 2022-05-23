@@ -5,7 +5,8 @@
 - [handlebars](https://handlebarsjs.com/)
 
 
-![benchmark](https://user-images.githubusercontent.com/42787030/169884361-9d9fb333-c822-43a3-be3f-43c1dd686959.png)
+![benchmark](https://user-images.githubusercontent.com/42787030/169914534-d8139f6a-9ad9-4886-b5a4-754632ab5967.png)
+
 
 ## How to use
 ```js
