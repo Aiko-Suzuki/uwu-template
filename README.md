@@ -29,10 +29,10 @@ console.log(result);
 ```
 ## Helper
 ```js
-registerHelper("json",(data) => {
+registerHelper("JSON",(data) => {
   return JSON.stringify(data)
 })
-// {!json users}
+// {{JSON users}}
 
 ```
 
