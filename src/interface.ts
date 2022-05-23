@@ -2,18 +2,28 @@
 interface block {
 	block_start: string;
 	block_value: string;
+    block_value_2?: string;
 	block_content: any;
 	block_content_2?: any;
+    block_content_3?: any;
 	index: number;
 	index_end: number;
 }
+
+interface block_inside {
+    type: "if" | "else" | "elseif" | "switch" | "case" | "default";
+    content: any;
+    condition?: any;
+    str_condition?: string;
+}
+
 interface item {
 	title: string;
 	childs?: item[];
 	content?: any;
 	var?: string;
-	type: "block" | "item" | "string" | "foreach" | "var" | "list";
+	type: "block" | "item" | "string" | "each" | "var" | "list";
 	index?: number;
 	index_end?: number;
 }
-export type { item, block };
+export type { item, block,block_inside };

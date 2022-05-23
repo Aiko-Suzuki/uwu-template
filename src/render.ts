@@ -39,14 +39,29 @@ function renderBlock(block: block, data: any) {
 
 	switch (condition_type) {
 		case "if": {
-			const result = new Function("data", "return " + block.block_value).apply(data) ? block.block_content : block.block_content_2;
-			return render(result.childs?.[0] || "", data);
+			let found = false;
+            const childs = block.block_content;
+            while (childs.length !== 0) {
+                const child = childs.shift();
+                if (child.condition) found = child.condition.apply(data);
+
+                if (found) return render(child.content, data);
+
+                // check if last child
+                if (childs.length === 0) {
+                    if (!child.condition) {
+                        return render(child.content, data);
+                    }
+                }
+
+
+            }
+			break;
 		}
 		default:
 			throw new Error("Unknown block type: " + condition_type);
 	}
 }
-// compile foreach return a function that can used to render a item
 
 function renderForeach(block: block, data: any) {
 	const childs = block.block_content.childs;
@@ -72,7 +87,7 @@ function render(tree: item, data: any) {
 		case "block":
 			html += renderBlock(tree.content, data);
 			break;
-		case "foreach":
+		case "each":
 			html += renderForeach(tree.content, data);
 			break;
 		case "string":
@@ -86,6 +101,11 @@ function render(tree: item, data: any) {
 				html += render(item, data);
 			}
 			break;
+        case "item":
+			for (const item of tree.childs as item[]) {
+				html += render(item, data);
+			}
+			break;
 		default:
 			html += tree.content;
 			break;
@@ -96,6 +116,7 @@ function render(tree: item, data: any) {
 
 function compile(template: string) {
 	const tree = parse(template);
+    Deno.writeTextFileSync("./tree.json", JSON.stringify(tree, null, 2));
 	const compiled = function (data: any) {
 		let result = "";
 		for (const item of tree.childs as item[]) {

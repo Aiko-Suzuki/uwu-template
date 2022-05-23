@@ -6,7 +6,7 @@ interface item {
 	id: number;
 	type: string;
 	startdate: string;
-	visible: boolean;
+	visible: any;
 }
 
 const formatdate = (date: string) => {
@@ -31,7 +31,7 @@ for (let i = 0; i < 100; i++) {
 		id: i,
 		type: "TV",
 		startdate: "2020-01-01",
-		visible: true,
+		visible: "3",
 	});
 }
 const template_compiled = nnt.compile(`${template}`);
