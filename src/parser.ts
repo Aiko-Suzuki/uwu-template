@@ -74,11 +74,10 @@ function parseBlock(template: string) {
         lastype = m.groups?.block_start ? m.groups?.block_start.replace("#","") : undefined ?? lastype;
         lastcondition = m.groups?.block_value ?? lastcondition;
         if (!gtype) gtype = m.groups?.block_start.replace("#","") ?? false;
-
         const block:block_inside = {
             type: lastype as block_inside["type"],
             content: parse(m.groups?.block_content ?? ""),
-            condition:  lastcondition ? new Function("data", `return ${lastcondition}`) : undefined,
+            condition:  lastcondition ? new Function("data", `return !!(${lastcondition})`) : undefined,
             str_condition : lastcondition
         }
         blocks.push(block);

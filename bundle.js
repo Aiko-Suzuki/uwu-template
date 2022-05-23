@@ -69,7 +69,7 @@ function parseBlock(template) {
         const block = {
             type: lastype,
             content: parse(m.groups?.block_content ?? ""),
-            condition: lastcondition ? new Function("data", `return ${lastcondition}`) : undefined,
+            condition: lastcondition ? new Function("data", `return !!(${lastcondition})`) : undefined,
             str_condition: lastcondition
         };
         blocks.push(block);
