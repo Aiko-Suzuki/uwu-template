@@ -1,9 +1,19 @@
-import { renderTemplate } from "./mod.ts";
+import * as nnt from "./mod.ts";
 import { Handlebars } from "https://deno.land/x/handlebars@v0.8.0/mod.ts";
 
 // First, create instance of Handlebars
 
 // format date to hour:minute yyyy-mm-dd
+
+const formatdate = (date: string) => {
+    const d = new Date(date);
+    const h = d.getUTCHours();
+    const m = d.getUTCMinutes();
+    const y = d.getUTCFullYear();
+    const M = d.getUTCMonth() + 1;
+    const D = d.getUTCDate();
+    return `${h < 10 ? "0" + h : h}:${m < 10 ? "0" + m : m} ${y}-${M < 10 ? "0" + M : M}-${D < 10 ? "0" + D : D}`;
+}
 
 const handle = new Handlebars({
     baseDir: 'bench',
@@ -14,17 +24,11 @@ const handle = new Handlebars({
     defaultLayout: 'main',
     compilerOptions: undefined,
     helpers: {
-        formatdate: (date: string) => {
-            const d = new Date(date);
-            const h = d.getUTCHours();
-            const m = d.getUTCMinutes();
-            const y = d.getUTCFullYear();
-            const M = d.getUTCMonth() + 1;
-            const D = d.getUTCDate();
-            return `${h < 10 ? "0" + h : h}:${m < 10 ? "0" + m : m} ${y}-${M < 10 ? "0" + M : M}-${D < 10 ? "0" + D : D}`;
-        }
+        formatdate
     },
 });
+
+nnt.registerHelper("formatdate",formatdate);
 
 const template = Deno.readTextFileSync("bench/test.nnt");
 const hbs_template = "bench/test.hbs";
@@ -112,7 +116,7 @@ const foreachtemp = `{#foreach this}${template}{/foreach}`;
 
 // 100 benchmark
 Deno.bench("[100] renderTemplate", async () => {
-    await renderTemplate("100 test", data_100, foreachtemp);
+    await nnt.renderTemplate("100 test", data_100, foreachtemp);
 });
 
 Deno.bench("[100] handlebars", async () => {
@@ -123,7 +127,7 @@ Deno.bench("[100] handlebars", async () => {
 
 // 500 benchmark
 Deno.bench("[500] renderTemplate", async () => {
-	await renderTemplate("500 test", data_500, foreachtemp);
+	await nnt.renderTemplate("500 test", data_500, foreachtemp);
 });
 
 Deno.bench("[500] handlebars", async () => {
@@ -134,7 +138,7 @@ Deno.bench("[500] handlebars", async () => {
 
 // 1k benchmark
 Deno.bench("[1k] renderTemplate", async () => {
-	await renderTemplate("1k test", data_1k, foreachtemp);
+	await nnt.renderTemplate("1k test", data_1k, foreachtemp);
 });
 
 Deno.bench("[1k] handlebars", async () => {
@@ -145,7 +149,7 @@ Deno.bench("[1k] handlebars", async () => {
 
 // 5k benchmark
 Deno.bench("[5k] renderTemplate", async () => {
-	await renderTemplate("5k test", data_5k, foreachtemp);
+	await nnt.renderTemplate("5k test", data_5k, foreachtemp);
 });
 Deno.bench("[5k] handlebars", async () => {
 	await handle.render(hbs_template, {
@@ -156,7 +160,7 @@ Deno.bench("[5k] handlebars", async () => {
 
 // 7.5k benchmark
 Deno.bench("[10k] renderTemplate", async () => {
-	await renderTemplate("10k test", data_7k, foreachtemp);
+	await nnt.renderTemplate("10k test", data_7k, foreachtemp);
 });
 Deno.bench("[10k] handlebars", async () => {
 	await handle.render(hbs_template, {

@@ -2,17 +2,12 @@
 import { item, block } from "./interface.ts";
 import { parse } from "./parser.ts";
 
-const helpers: Record<string, any> = {
-	formatdate: (date: string) => {
-		const d = new Date(date);
-		const h = d.getUTCHours();
-		const m = d.getUTCMinutes();
-		const y = d.getUTCFullYear();
-		const M = d.getUTCMonth() + 1;
-		const D = d.getUTCDate();
-		return `${h < 10 ? "0" + h : h}:${m < 10 ? "0" + m : m} ${y}-${M < 10 ? "0" + M : M}-${D < 10 ? "0" + D : D}`;
-	},
-};
+const helpers: Record<string, any> = {};
+
+function registerHelper(name: string, fn: any) {
+    helpers[name] = fn;
+}
+
 const render_cache: Record<string, any> = {};
 
 function renderString(item: item, data: any) {
@@ -109,4 +104,4 @@ function renderTemplate(key: string, data: any, template: string) {
 	return compiled(data);
 }
 
-export { renderTemplate, compile };
+export { renderTemplate, compile, registerHelper };

@@ -1,1 +1,1 @@
-export { renderTemplate, compile } from "./src/render.ts";
+export { renderTemplate, compile,registerHelper } from "./src/render.ts";
