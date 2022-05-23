@@ -39,7 +39,6 @@ function renderBlock(block: block, data: any) {
 
 	switch (condition_type) {
 		case "if": {
-            let found = false;
             let i = 0;
             let child;
             while (child = block.block_content[i++]) {

@@ -1,13 +1,5 @@
 import * as nnt from "./mod.ts";
 const template = Deno.readTextFileSync("bench/test.nnt");
-interface item {
-	title: string;
-	slug: string;
-	id: number;
-	type: string;
-	startdate: string;
-	visible: any;
-}
 
 const formatdate = (date: string) => {
     const d = new Date(date);
@@ -21,7 +13,7 @@ const formatdate = (date: string) => {
 
 nnt.registerHelper("formatdate",formatdate);
 
-const data_100: item[] = [];
+const data_100 = [];
 
 // randomly fill the data array with item
 for (let i = 0; i < 100; i++) {

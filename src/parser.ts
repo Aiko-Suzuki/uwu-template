@@ -85,7 +85,7 @@ function parseBlock(template: string) {
 
         const split = m.groups?.block_next?.split(" ") ?? [];
         lastype = split[1] ? split[0].replace("#","") : split[0]  || "";
-        lastcondition = split.slice(1).join(" ") || "";; 
+        lastcondition = split.slice(1).join(" ") || "";
     }
 
 
