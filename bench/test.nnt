@@ -21,12 +21,8 @@
         <div class="main__table-text">1392</div>
     </td>
     <td id="visible-{{id}}">
-        {{#if this.visible === "1"}}
+        {{#if this.visible}}
         <div class="main__table-text main__table-text--green">Visible</div>
-        {{#elseif this.visible === "2"}}
-        <div class="main__table-text main__table-text--red">Not visible</div>
-        {{#elseif this.visible === "3"}}
-        <div class="main__table-text main__table-text--red">Secrect</div>
         {{else}}
         <div class="main__table-text main__table-text--red">Hidden</div>
         {{/if}}

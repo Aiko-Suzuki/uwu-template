@@ -168,10 +168,11 @@ const ss = (name)=>{
     render_cache[name] = helper ? (data)=>helper(data[key])
      : (data)=>data[name]
     ;
+    return render_cache[name];
 };
 function renderString(item, data) {
     let result = "";
-    render_cache[item.var] ? result = render_cache[item.var](data) : ss(item.var);
+    render_cache[item.var] ? result = render_cache[item.var](data) : result = ss(item.var)(data);
     return result;
 }
 function renderBlock(block, data) {

@@ -28,11 +28,12 @@ const ss = (name: string) => {
 		key = split[1],
 		helper = helpers[action];
 	render_cache[name] = helper ? (data: any) => helper(data[key]) : (data: any) => data[name];
+    return render_cache[name];
 };
 
 function renderString(item: item, data: any) {
 	let result = "";
-	render_cache[item.var as string] ? (result = render_cache[item.var as string](data)) : ss(item.var as string);
+	render_cache[item.var as string] ? (result = render_cache[item.var as string](data)) : result = ss(item.var as string)(data);
 	return result;
 }
 

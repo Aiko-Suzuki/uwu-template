@@ -24,7 +24,7 @@ for (let i = 0; i < 1000; i++) {
 		type: "TV",
 		startdate: "2020-01-01",
         // random asing 1 , 2 or 3
-		visible: `${Math.floor(Math.random() * 3) + 1}`,
+		visible: true,
 	});
 }
 const template_compiled = nnt.compile(`${template}`);
