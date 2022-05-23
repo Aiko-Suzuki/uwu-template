@@ -127,7 +127,7 @@ function renderTemplate(key: string, data: any, template: string) {
 	return compiled(data);
 }
 
-registerHelper("json", (data: any) => {
+registerHelper("JSON", (data: any) => {
 	return JSON.stringify(data);
 });
 
