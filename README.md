@@ -21,7 +21,7 @@ const data = {
   visible: true,
 }
 
-const result = compiled(data);
+const result = compiled([data]);
 console.log(result )
 ```
 ## Helper
