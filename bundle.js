@@ -257,7 +257,7 @@ function renderTemplate(key, data, template) {
     compiled_list.set(key, compiled);
     return compiled(data);
 }
-registerHelper("json", (data)=>{
+registerHelper("JSON", (data)=>{
     return JSON.stringify(data);
 });
 registerHelper("escape", (data)=>{
