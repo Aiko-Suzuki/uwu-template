@@ -33,7 +33,11 @@ registerHelper("json",(data) => {
 
 ```
 
-## supported block
+### supported block
 - **if** 🟢
 - **foreach** 🟢
 - **elseif** 🔴
+
+### default helper
+- escape
+- json
