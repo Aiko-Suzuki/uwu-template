@@ -29,6 +29,8 @@ console.log(result )
 registerHelper("json",(data) => {
   return JSON.stringify(data)
 })
+// {!json users}
+
 ```
 
 ## supported block
