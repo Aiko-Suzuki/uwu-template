@@ -1,7 +1,6 @@
 // deno-lint-ignore-file no-explicit-any no-cond-assign ban-unused-ignore no-fallthrough
-import { item, block, block_inside } from "./interface.ts";
+import { item, block } from "./interface.ts";
 import { parse } from "./parser.ts";
-const CONDITION_VALUE_REGEX = /this\.(.*?)(?!\S)/gms;
 
 const helpers: Record<string, any> = {};
 
