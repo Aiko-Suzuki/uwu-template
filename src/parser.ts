@@ -82,7 +82,7 @@ function parse(template: string) {
 				blocks.push({
 					block_start: groups.block_start,
 					block_value: groups.block_value,
-					block_content: parse(groups.block_content + "{else}" + groups.block_content_2),
+					block_content: parse(groups.block_content + (groups.block_content_2 ? "{else}" + groups.block_content_2 : "")),
 					index: m.index as number,
 					index_end: (m.index as number) + m[0].length,
 				});
