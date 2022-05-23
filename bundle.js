@@ -122,17 +122,22 @@ function parse(template) {
     };
     return root;
 }
-const helpers = {
-    formatdate: (date)=>{
-        const d = new Date(date);
-        const h = d.getUTCHours();
-        const m = d.getUTCMinutes();
-        const y = d.getUTCFullYear();
-        const M = d.getUTCMonth() + 1;
-        const D = d.getUTCDate();
-        return `${h < 10 ? "0" + h : h}:${m < 10 ? "0" + m : m} ${y}-${M < 10 ? "0" + M : M}-${D < 10 ? "0" + D : D}`;
-    }
-};
+const helpers = {};
+function registerHelper(name, fn) {
+    helpers[name] = fn;
+}
+function escape(text) {
+    const entity = {
+        "<": "&lt;",
+        ">": "&gt;",
+        "&": "&amp;",
+        "'": "&#39;",
+        '"': "&#34;"
+    };
+    return text.replaceAll(/[&<>"']/g, (__char)=>{
+        return entity[__char];
+    });
+}
 const render_cache = {};
 function renderString(item, data1) {
     const var_ = item.var;
@@ -221,4 +226,10 @@ function renderTemplate(key, data, template) {
     compiled_list.set(key, compiled);
     return compiled(data);
 }
-export { renderTemplate as renderTemplate, compile as compile };
+registerHelper("json", (data)=>{
+    return JSON.stringify(data);
+});
+registerHelper("escape", (data)=>{
+    return escape(data.toString());
+});
+export { renderTemplate as renderTemplate, compile as compile, registerHelper as registerHelper };
