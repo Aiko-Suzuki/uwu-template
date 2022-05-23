@@ -34,4 +34,4 @@ registerHelper("json",(data) => {
 ## supported block
 - **if** 🟢
 - **foreach** 🟢
-- **elseif ** 🔴
+- **elseif** 🔴
