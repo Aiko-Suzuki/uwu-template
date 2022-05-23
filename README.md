@@ -4,7 +4,7 @@
 - [renderTemplate](https://github.com/Aiko-Suzuki/nnt-template/blob/main/src/render.ts#L110)
 - [handlebars](https://handlebarsjs.com/)
 
-![benchmark](https://user-images.githubusercontent.com/42787030/169732537-abb9ddbc-f4f0-4b37-9e60-8e40232661dd.png)
+![benchmark](https://user-images.githubusercontent.com/42787030/169873497-f8277827-30e6-4b71-911d-c5a40193ecad.png)
 ## How to use
 ```js
 // example using deno: https://deno.land/
