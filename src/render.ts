@@ -1,4 +1,4 @@
-// deno-lint-ignore-file no-explicit-any
+// deno-lint-ignore-file no-explicit-any no-cond-assign
 import { item, block } from "./interface.ts";
 import { parse } from "./parser.ts";
 
@@ -39,22 +39,16 @@ function renderBlock(block: block, data: any) {
 
 	switch (condition_type) {
 		case "if": {
-			let found = false;
-            const childs = block.block_content;
-            while (childs.length !== 0) {
-                const child = childs.shift();
-                if (child.condition) found = child.condition.apply(data);
-
-                if (found) return render(child.content, data);
-
-                // check if last child
-                if (childs.length === 0) {
-                    if (!child.condition) {
+            let found = false;
+            let i = 0;
+            let child;
+            while (child = block.block_content[i++]) {
+                switch (child.condition && child.condition.apply(data)) {
+                    case false:
+                        break;
+                    default:
                         return render(child.content, data);
-                    }
                 }
-
-
             }
 			break;
 		}
@@ -116,7 +110,6 @@ function render(tree: item, data: any) {
 
 function compile(template: string) {
 	const tree = parse(template);
-    Deno.writeTextFileSync("./tree.json", JSON.stringify(tree, null, 2));
 	const compiled = function (data: any) {
 		let result = "";
 		for (const item of tree.childs as item[]) {

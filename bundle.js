@@ -248,7 +248,6 @@ function render(tree, data) {
 }
 function compile(template) {
     const tree = parse(template);
-    Deno.writeTextFileSync("./tree.json", JSON.stringify(tree, null, 2));
     const compiled = function(data) {
         let result = "";
         for (const item of tree.childs){
