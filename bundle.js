@@ -4,7 +4,7 @@
 
 const ITEM_PARSING_REGEX = /\{{(.*?)}}/g;
 const BLOCK_PARSING_REGEX = /{{#(?<block_start>.*?) (?<block_value>.*?)}}(?<block_content>.*?){{\/\k<block_start>}}/gms;
-const BLOCK_INSIDE_REGEX = /(?:{{(?<block_start>.*?)(?: (?<block_value>.*?))}})?(?<block_content>.*?)?{{(?:(?<block_next>.*?|\/.*?))}}/gms;
+const BLOCK_INSIDE_REGEX = /(?:{{(?<block_start>.*?)(?: (?<block_value>.*?))}})?(?<block_content>.*?)?{{(?:(?<block_next>#.*?|\/.*?))}}/gms;
 function parseString(template) {
     const items = [];
     let template_left = template;
