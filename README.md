@@ -4,9 +4,7 @@
 - [renderTemplate](https://github.com/Aiko-Suzuki/nnt-template/blob/main/src/render.ts#L110)
 - [handlebars](https://handlebarsjs.com/)
 
-
-![benchmark](https://user-images.githubusercontent.com/42787030/169914534-d8139f6a-9ad9-4886-b5a4-754632ab5967.png)
-
+![benchmark](https://user-images.githubusercontent.com/42787030/170067627-8db2c86a-b8fe-48af-8662-3a86abac445f.png)
 
 ## How to use
 ```js
@@ -42,5 +40,5 @@ registerHelper("JSON",(data) => {
 - **elseif** 🟢
 
 ### default helper
-- escape
 - json
+- raw
