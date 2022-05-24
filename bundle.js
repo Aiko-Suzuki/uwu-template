@@ -146,51 +146,55 @@ function parse(template) {
     };
     return root;
 }
+const ESCAPE_REGEX = /[&<>'"]/g;
 const helpers = {};
 function registerHelper(name, fn) {
     helpers[name] = fn;
 }
+const entity = {
+    "<": "&lt;",
+    ">": "&gt;",
+    "&": "&amp;",
+    "'": "&#39;",
+    '"': "&#34;"
+};
 function escape(text) {
-    const entity = {
-        "<": "&lt;",
-        ">": "&gt;",
-        "&": "&amp;",
-        "'": "&#39;",
-        '"': "&#34;"
-    };
-    return text.replaceAll(/[&<>"']/g, (__char)=>{
-        return entity[__char];
-    });
+    let result = text;
+    let m;
+    while(m = ESCAPE_REGEX.exec(text)){
+        result = result.substring(0, m.index) + entity[m[0]] + result.substring(m.index + m[0].length);
+    }
+    return result;
 }
 const render_cache = {};
 const ss = (name)=>{
-    const split = name.split(" "), action = split[0], key = split[1], helper = helpers[action];
-    render_cache[name] = helper ? (data)=>helper(data[key])
-     : (data)=>data[name]
+    const split = name.split(" "), action = split[0], key = split[1];
+    render_cache[name] = helpers[action] ? (data)=>helpers[action](data[key])
+     : (data)=>typeof data[name] == "string" ? escape(data[name]) : data[name]
     ;
     return render_cache[name];
 };
 function renderString(item, data) {
-    let result = "";
-    render_cache[item.var] ? result = render_cache[item.var](data) : result = ss(item.var)(data);
-    return result;
+    return render_cache[item.var]?.(data) ?? ss(item.var)(data);
 }
 function renderBlock(block, data) {
     switch(block.block_start){
         case "if":
             {
-                let i = 0, child;
-                while(child = block.block_content[i++]){
-                    switch(child.condition){
+                let i = 0;
+                const child_len = block.block_content.length;
+                while(i < child_len){
+                    switch(block.block_content[i].condition){
                         case undefined:
-                            return render(child.content, data);
+                            return render(block.block_content[i].content, data);
                         default:
-                            switch(child.condition.apply(data)){
+                            switch(block.block_content[i].condition.apply(data)){
                                 case true:
-                                    return render(child.content, data);
+                                    return render(block.block_content[i].content, data);
                             }
                             break;
                     }
+                    i++;
                 }
                 break;
             }
@@ -202,12 +206,13 @@ function renderForeach(block, data) {
     const value = block.block_value == "this" ? data : data[block.block_value];
     let result = "";
     let i = 0, e = 0;
-    let item, child;
-    while(item = value[i++]){
-        while(child = block.block_content.childs[e++]){
-            result += render(child, item);
+    const value_len = value.length, child_len = block.block_content.childs.length;
+    while(i < value_len){
+        while(e < child_len){
+            result += render(block.block_content.childs[e++], value[i]);
         }
         e = 0;
+        i++;
     }
     return result;
 }
@@ -266,7 +271,7 @@ function renderTemplate(key, data, template) {
 registerHelper("JSON", (data)=>{
     return JSON.stringify(data);
 });
-registerHelper("escape", (data)=>{
-    return escape(data.toString());
+registerHelper("raw", (data)=>{
+    return data;
 });
 export { renderTemplate as renderTemplate, compile as compile, registerHelper as registerHelper };
