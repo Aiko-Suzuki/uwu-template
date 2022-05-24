@@ -48,8 +48,8 @@ function generateArray(number:number){
     const data: item[] = [];
     for (let i = 1; i <= number; i++) {
         data.push({
-            title: "Test Title " + i,
-            slug: "test-title-" + i,
+            title: "Test Title &" + i,
+            slug: "test-title>" + i,
             id: i,
             type: "post",
             startdate: new Date(new Date().getTime() - Math.floor(Math.random() * 10000000000)).toISOString().slice(0, 10),

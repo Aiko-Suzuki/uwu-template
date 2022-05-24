@@ -19,28 +19,25 @@ const entity: { [char: string]: string } = {
 };
 
 function escape(text: string): string {
-    // replace using while loop and ESCAPE_REGEX
     let result = text;
     let m;
     while ((m = ESCAPE_REGEX.exec(text))) {
         result = result.substring(0, m.index) + entity[m[0]] + result.substring(m.index + m[0].length);  
     }
-
     return result;
 }
 const render_cache: Record<string, any> = {};
 
-const ss = (name: string,data:any) => {
+const ss = (name: string) => {
 	const split = name.split(" "),
 		action = split[0],
-		key = split[1],
-		helper = helpers[action];
-	render_cache[name] = helper ? (data: any) => helper(data[key]) : (data: any) => typeof data[name] == "string" ? escape(data[name]) : data[name];
-    return render_cache[name](data);
+		key = split[1];
+	render_cache[name] = helpers[action] ? (data: any) => helpers[action](data[key]) : (data: any) => typeof data[name] == "string" ? escape(data[name]) : data[name];
+    return render_cache[name];
 };
 
 function renderString(item: item, data: any) {
-	return render_cache[item.var as string]?.(data) ?? ss(item.var as string,data);
+	return render_cache[item.var as string]?.(data) ?? ss(item.var as string)(data);
 }
 
 function renderBlock(block: block, data: any) {
