@@ -2,58 +2,72 @@
 import { item, block } from "./interface.ts";
 import { parse } from "./parser.ts";
 
+const ESCAPE_REGEX = /[&<>'"]/g;
+
 const helpers: Record<string, any> = {};
 
 function registerHelper(name: string, fn: any) {
 	helpers[name] = fn;
 }
 
+const entity: { [char: string]: string } = {
+    "<": "&lt;",
+    ">": "&gt;",
+    "&": "&amp;",
+    "'": "&#39;",
+    '"': "&#34;",
+};
+
 function escape(text: string): string {
-	const entity: { [char: string]: string } = {
-		"<": "&lt;",
-		">": "&gt;",
-		"&": "&amp;",
-		"'": "&#39;",
-		'"': "&#34;",
-	};
-	return text.replaceAll(/[&<>"']/g, (char) => {
-		return entity[char];
-	});
+    // replace using while loop and ESCAPE_REGEX
+    let result = text;
+    let m;
+    while ((m = ESCAPE_REGEX.exec(text))) {
+        result = result.substring(0, m.index) + entity[m[0]] + result.substring(m.index + m[0].length);  
+    }
+
+    return result;
 }
 const render_cache: Record<string, any> = {};
 
-const ss = (name: string) => {
+const ss = (name: string,data:any) => {
 	const split = name.split(" "),
 		action = split[0],
 		key = split[1],
 		helper = helpers[action];
-	render_cache[name] = helper ? (data: any) => helper(data[key]) : (data: any) => data[name];
-    return render_cache[name];
+	render_cache[name] = helper ? (data: any) => helper(data[key]) : (data: any) => {
+        switch (typeof data[name]) {
+            case "string":
+                return escape(data[name]);
+            default:
+                return data[name];
+        } 
+    };
+    return render_cache[name](data);
 };
 
 function renderString(item: item, data: any) {
-	let result = "";
-	render_cache[item.var as string] ? (result = render_cache[item.var as string](data)) : result = ss(item.var as string)(data);
-	return result;
+	return render_cache[item.var as string]?.(data) ?? ss(item.var as string,data);
 }
 
 function renderBlock(block: block, data: any) {
 	// generate unique key for condition
 	switch (block.block_start) {
 		case "if": {
-			let i = 0,
-				child;
-			while ((child = block.block_content[i++])) {
-				switch (child.condition) {
+            let i = 0;
+            const child_len = block.block_content.length;
+			while (i < child_len) {
+				switch (block.block_content[i].condition) {
 					case undefined:
-						return render(child.content, data);
+						return render(block.block_content[i].content, data);
 					default:
-						switch (child.condition.apply(data)) {
+						switch (block.block_content[i].condition.apply(data)) {
 							case true:
-								return render(child.content, data);
+								return render(block.block_content[i].content, data);
 						}
 						break;
 				}
+                i++;
 			}
 			break;
 		}
@@ -68,12 +82,15 @@ function renderForeach(block: block, data: any) {
 
 	let i = 0,
 		e = 0;
-	let item, child;
-	while ((item = value[i++])) {
-		while ((child = block.block_content.childs[e++])) {
-			result += render(child, item);
+    const value_len = value.length,
+		child_len = block.block_content.childs.length;
+
+	while (i < value_len) {
+		while (e < child_len) {
+			result += render(block.block_content.childs[e++],value[i]);
 		}
 		e = 0;
+        i++
 	}
 	return result;
 }
@@ -138,8 +155,8 @@ registerHelper("JSON", (data: any) => {
 	return JSON.stringify(data);
 });
 
-registerHelper("escape", (data: any) => {
-	return escape(data.toString());
+registerHelper("raw", (data: any) => {
+	return data;
 });
 
 export { renderTemplate, compile, registerHelper };

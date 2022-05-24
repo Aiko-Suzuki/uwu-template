@@ -21,7 +21,7 @@ const handle = new Handlebars({
     partialsDir: 'partials/',
     cachePartials: true,
     defaultLayout: 'main',
-    compilerOptions: undefined,
+    compilerOptions: {},
     helpers: {
         formatdate
     },
@@ -43,9 +43,10 @@ interface item {
 	startdate: string;
 	visible: string;
 }
+
 function generateArray(number:number){
     const data: item[] = [];
-    for (let i = 0; i < number; i++) {
+    for (let i = 1; i <= number; i++) {
         data.push({
             title: "Test Title " + i,
             slug: "test-title-" + i,
