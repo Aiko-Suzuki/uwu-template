@@ -35,14 +35,7 @@ const ss = (name: string,data:any) => {
 		action = split[0],
 		key = split[1],
 		helper = helpers[action];
-	render_cache[name] = helper ? (data: any) => helper(data[key]) : (data: any) => {
-        switch (typeof data[name]) {
-            case "string":
-                return escape(data[name]);
-            default:
-                return data[name];
-        } 
-    };
+	render_cache[name] = helper ? (data: any) => helper(data[key]) : (data: any) => typeof data[name] == "string" ? escape(data[name]) : data[name];
     return render_cache[name](data);
 };
 
