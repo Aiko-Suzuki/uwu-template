@@ -159,103 +159,121 @@ const entity = {
     '"': "&#34;"
 };
 function escape(text) {
-    let result = text;
+    let result = "";
+    let text_left = text;
     let m;
-    while(m = ESCAPE_REGEX.exec(text)){
-        result = result.substring(0, m.index) + entity[m[0]] + result.substring(m.index + m[0].length);
+    while(m = ESCAPE_REGEX.exec(text_left)){
+        result += text_left.slice(0, m.index);
+        result += entity[m[0]];
+        text_left = text_left.slice(m.index + 1);
     }
-    return result;
+    return result + text_left;
 }
-const render_cache = {};
-const ss = (name)=>{
-    const split = name.split(" "), action = split[0], key = split[1];
-    render_cache[name] = helpers[action] ? (data)=>helpers[action](data[key])
-     : (data)=>typeof data[name] == "string" ? escape(data[name]) : data[name]
-    ;
-    return render_cache[name];
+const COMPILE_OPTIONS = {
+    escape: true
 };
-function renderString(item, data) {
-    return render_cache[item.var]?.(data) ?? ss(item.var)(data);
-}
-function renderBlock(block, data) {
-    switch(block.block_start){
-        case "if":
-            {
-                let i = 0;
-                const child_len = block.block_content.length;
-                while(i < child_len){
-                    switch(block.block_content[i].condition){
-                        case undefined:
-                            return render(block.block_content[i].content, data);
-                        default:
-                            switch(block.block_content[i].condition.apply(data)){
-                                case true:
-                                    return render(block.block_content[i].content, data);
-                            }
-                            break;
+class renderObject {
+    options;
+    compiled;
+    data;
+    render_cache;
+    var_cache;
+    constructor(template, options = COMPILE_OPTIONS){
+        this.template = template;
+        this.options = COMPILE_OPTIONS;
+        this.render_cache = {};
+        this.var_cache = {};
+        this.options = options;
+        this.compiled = typeof template == "string" ? parse(template) : template;
+    }
+    stringCache(name) {
+        const split = name.split(" "), action = split[0], key = split[1];
+        return this.render_cache[name] = helpers[action] ? ()=>helpers[action](this.data[key])
+         : ()=>this.options.escape && typeof this.data[name] == "string" ? escape(this.data[name]) : this.data[name]
+        ;
+    }
+    renderString(item) {
+        return this.render_cache[item.var]?.() ?? this.stringCache(item.var)();
+    }
+    renderBlock(block) {
+        switch(block.block_start){
+            case "if":
+                {
+                    for(let index = 0; index < block.block_content.length; index++){
+                        const item = block.block_content[index];
+                        switch(item.condition){
+                            case undefined:
+                                return this.render(item.content);
+                            default:
+                                if (item.condition.apply(this.data)) {
+                                    return this.render(item.content);
+                                }
+                                break;
+                        }
                     }
-                    i++;
+                }
+            default:
+                throw new Error("Unknown block type: " + block.block_start);
+        }
+    }
+    renderForeach(block) {
+        let result = "";
+        const old_data = this.data;
+        const old_cache = this.var_cache;
+        const value = block.block_value == "this" ? this.data : this.data[block.block_value];
+        const child_len = block.block_content.childs.length;
+        for(let vindex = 0; vindex < value.length; vindex++){
+            this.data = value[vindex];
+            this.var_cache = {};
+            for(let index = 0; index < child_len; index++){
+                result += this.render(block.block_content.childs[index]);
+            }
+        }
+        this.data = old_data;
+        this.var_cache = old_cache;
+        return result;
+    }
+    render(tree) {
+        let html = "";
+        switch(tree.type){
+            case "block":
+                html += this.renderBlock(tree.content);
+                break;
+            case "each":
+                html += this.renderForeach(tree.content);
+                break;
+            case "string":
+                html += tree.content;
+                break;
+            case "var":
+                html += this.renderString(tree);
+                break;
+            case "list":
+                for (const item of tree.content){
+                    html += this.render(item);
                 }
                 break;
-            }
-        default:
-            throw new Error("Unknown block type: " + block.block_start);
-    }
-}
-function renderForeach(block, data) {
-    const value = block.block_value == "this" ? data : data[block.block_value];
-    let result = "";
-    let i = 0, e = 0;
-    const value_len = value.length, child_len = block.block_content.childs.length;
-    while(i < value_len){
-        while(e < child_len){
-            result += render(block.block_content.childs[e++], value[i]);
+            case "item":
+                for (const item1 of tree.childs){
+                    html += this.render(item1);
+                }
+                break;
+            default:
+                html += tree.content;
+                break;
         }
-        e = 0;
-        i++;
+        return html;
     }
-    return result;
-}
-function render(tree, data) {
-    let html = "";
-    switch(tree.type){
-        case "block":
-            html += renderBlock(tree.content, data);
-            break;
-        case "each":
-            if (data.length == 0) break;
-            html += renderForeach(tree.content, data);
-            break;
-        case "string":
-            html += tree.content;
-            break;
-        case "var":
-            html += renderString(tree, data);
-            break;
-        case "list":
-            for (const item of tree.content){
-                html += render(item, data);
-            }
-            break;
-        case "item":
-            for (const item1 of tree.childs){
-                html += render(item1, data);
-            }
-            break;
-        default:
-            html += tree.content;
-            break;
+    start(data) {
+        this.data = data;
+        return this.render(this.compiled);
     }
-    return html;
+    template;
 }
-function compile(template) {
-    const tree = parse(template);
+function compile(template, options = COMPILE_OPTIONS) {
+    const tree = new renderObject(template, options);
     const compiled = function(data) {
-        let result = "";
-        for (const item of tree.childs){
-            result += render(item, data);
-        }
-        return result;
+        return tree.start(data);
     };
     return compiled;
 }
