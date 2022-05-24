@@ -24,7 +24,7 @@ for (let i = 1; i <= 100; i++) {
 		type: "TV",
 		startdate: new Date(new Date().getTime() - Math.floor(Math.random() * 10000000000)).toISOString().slice(0, 10),
         // random asing 1 , 2 or 3
-		visible: true,
+		visible: Math.floor(Math.random() * 3) + 1,
 	});
 }
 const template_compiled = nnt.compile(`${template}`);
