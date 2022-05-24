@@ -32,7 +32,6 @@ function escape(text: string): string {
 
 const COMPILE_OPTIONS = {
 	escape: true,
-	var_cache: true,
 };
 
 class renderObject {
