@@ -22,8 +22,8 @@
     </td>
     <td id="visible-{{id}}">
         {{#if this.visible == 1}}
-            nested if test : {{#if this.visible == true}}first{{/if}} - {{#if this.visible == true}}second{{/if}}
-            more nested test : {{#if this.visible == true}}first{{#if this.visible == true}} - second{{/if}}{{/if}}
+            nested if test : {{#if this.visible == true}}{{id}}{{/if}} - {{#if this.visible == true}}{{type}}{{/if}}
+            more nested test : {{#if this.visible == true}}{{type}}{{#if this.visible == true}} - {{id}}{{/if}}{{/if}}
         {{#elseif this.visible == 2}}
             <div class="main__table-text main__table-text--green">secret</div>
         {{#else}}

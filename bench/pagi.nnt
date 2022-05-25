@@ -1,0 +1,13 @@
+{{#each this}}
+    {{#if this.type == "prev"}}
+        <li class="main__pagination-item main__pagination-item--prev">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,18a1,1,0,0,1-1-1V9A1,1,0,0,1,13,8H19a1,1,0,0,1,0,2H13A1,1,0,0,1,12,9Z"></path></svg>
+        </li>
+    {{#elseif this.type == "next"}}
+        <li class="main__pagination-item main__pagination-item--next">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,9a1,1,0,0,1,1,1H19a1,1,0,0,1,0-2H13A1,1,0,0,1,12,9Z"></path></svg>
+        </li>
+    {{#else}}
+        <li class="paginator__item{{#if this.active}} paginator__item--active{{/if}}"><a href="?page={{page}}">{{page}}</a></li>
+    {{/if}}
+{{/each}}

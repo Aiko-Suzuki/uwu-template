@@ -74,7 +74,7 @@ class renderObject {
 							break;
 					}
 				}
-                break;
+                return "";
 			}
 			default:
 				throw new Error("Unknown block type: " + block.block_start);

@@ -34,5 +34,25 @@ const res = template_compiled(data_100);
 const performance_end = performance.now();
 console.log(`${performance_end - performance_start}ms`);
 
+const other_test = Deno.readTextFileSync("bench/pagi.nnt");
+const other_template_compiled = nnt.compile(`${other_test}`);
+const res_2 = other_template_compiled([
+    {
+        "type": "page",
+        "page": 1,
+        "active": true
+    },
+    {
+        "type": "page",
+        "page": 2,
+        "active": false
+    },
+    {
+        "type": "page",
+        "page": 3,
+        "active": false
+    }
+]);
 
 Deno.writeTextFileSync("test_out.html", res);
+Deno.writeTextFileSync("test_out_2.html", res_2);

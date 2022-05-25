@@ -247,7 +247,6 @@ function parse(template: string) {
         }
 		
 	}
-    console.log(first_block,closing_block);
 
     if (first_block && closing_block) {
         switch (first_block.groups?.block_start) {
@@ -291,7 +290,7 @@ function parse(template: string) {
 			type: block.block_start == "each" ? "each" : "block",
 		});
 		// check if its last block
-		template_left = template_left.substring(block.index_end);
+		template_left = template_left.substring(block.index_end - 1);
         if (BLOCK_PARSING_REGEX.test(template_left)) {
             items.push({
                 title: "block",
@@ -300,7 +299,6 @@ function parse(template: string) {
             });
             continue;
         }
-        //console.log(template_left);
 		if (index === blocks.length - 1) {
             // check if string contains only whitespace
 			items.push({
