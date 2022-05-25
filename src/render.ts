@@ -143,7 +143,6 @@ class renderObject {
 
 function compile(template: string, options = COMPILE_OPTIONS) {
 	const tree = new renderObject(template, options);
-    Deno.writeTextFileSync("template.json", JSON.stringify(tree.compiled, null, 2));
 	const compiled = function (data: any) {
 		return tree.start(data);
 	};
