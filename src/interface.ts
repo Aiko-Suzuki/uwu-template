@@ -22,7 +22,7 @@ interface item {
 	childs?: item[];
 	content?: any;
 	var?: string;
-	type: "block" | "item" | "string" | "each" | "var" | "list";
+	type: "block" | "item" | "string" | "each" | "var" | "list"| "items";
 	index?: number;
 	index_end?: number;
 }

@@ -23,9 +23,10 @@
     </td>
     <td id="visible-{{this.id}}">
         {{#if this.visible}}
-        <div class="main__table-text main__table-text--green">Visible</div>
+            nested if test : {{#if this.visible}}first{{/if}} - {{#if this.visible}}second{{/if}}
+            more nested test : {{#if this.visible}}first{{#if this.visible}} - second{{/if}}{{/if}}
         {{else}}
-        <div class="main__table-text main__table-text--red">Hidden</div>
+            <div class="main__table-text main__table-text--red">Hidden</div>
         {{/if}}
     </td>
     <td>

@@ -95,7 +95,7 @@ function parseIfBlock(template: string) {
         item_order.push(item);
     }
     
-    const open_if = template.matchAll(BLOCK_PARSING_REGEX);
+    const open_if = template.matchAll(new RegExp(BLOCK_PARSING_REGEX, "g"));
     for (const m of open_if) {
         const type = m.groups?.block_start ? m.groups?.block_start : m.groups?.block_close ? "ifclose" : "else";
 
@@ -217,7 +217,7 @@ function parse(template: string) {
 
 	let template_left = template;
 	// parse block with the BLOCK_PARSING_REGEX
-	const match = template.matchAll(BLOCK_PARSING_REGEX);
+	const match = template.matchAll(new RegExp(BLOCK_PARSING_REGEX, "g"));
     let first_block;
     let closing_block;
     let temp_block:any[] = [];
@@ -247,6 +247,7 @@ function parse(template: string) {
         }
 		
 	}
+    console.log(first_block,closing_block);
 
     if (first_block && closing_block) {
         switch (first_block.groups?.block_start) {
@@ -291,6 +292,14 @@ function parse(template: string) {
 		});
 		// check if its last block
 		template_left = template_left.substring(block.index_end);
+        if (BLOCK_PARSING_REGEX.test(template_left)) {
+            items.push({
+                title: "block",
+                content: parse(template_left),
+                type: "item",
+            });
+            continue;
+        }
         //console.log(template_left);
 		if (index === blocks.length - 1) {
             // check if string contains only whitespace
@@ -312,7 +321,7 @@ function parse(template: string) {
 	const root = {
 		title: "list",
 		childs: items,
-		type: "item",
+		type: "items",
 	};
 
 	return root as item;

@@ -118,11 +118,15 @@ class renderObject {
 					html += this.render(item);
 				}
 				break;
-			case "item":
+			case "items":
 				for (const item of tree.childs as item[]) {
 					html += this.render(item);
 				}
 				break;
+            case "item":
+                html += this.render(tree.content);
+                break;
+
 			default:
 				html += tree.content;
 				break;
