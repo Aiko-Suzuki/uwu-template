@@ -22,11 +22,11 @@
     </td>
     <td id="visible-{{id}}">
         {{#if this.visible == 1}}
-        <div class="main__table-text main__table-text--green">Visible-{{id}}</div>
-        {{#elseif this.visible == 3}}
-        <div class="main__table-text main__table-text--green">secret</div>
+            {{#if this.visible == true}}asdasd{{/if}}
+        {{#elseif this.visible == 2}}
+            <div class="main__table-text main__table-text--green">secret</div>
         {{#else}}
-        <div class="main__table-text main__table-text--red">Hidden</div>
+            <div class="main__table-text main__table-text--red">Hidden</div>
         {{/if}}
     </td>
     <td>

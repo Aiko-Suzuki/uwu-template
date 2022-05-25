@@ -2,11 +2,8 @@ import { item, block,block_inside } from "./interface.ts";
 
 const ITEM_PARSING_REGEX = /\{{(.*?)}}/g;
 
-const BLOCK_PARSING_REGEX = /{{#(?<block_start>.*?) (?<block_value>.*?)}}(?<block_content>.*?){{\/\k<block_start>}}/gms;
-//const BLOCK_PARSING_REGEX = /{{#(?<block_start>.*?) (?<block_value>.*?)}}(?<block_content>.*?)(?:\{\{else\}\}(?<block_content_2>.*?))?{{\/\k<block_start>}}/gms;
 
-const BLOCK_INSIDE_REGEX = /(?:{{(?<block_start>.*?)(?: (?<block_value>.*?))}})?(?<block_content>.*?)?{{(?:(?<block_next>#.*?|\/.*?))}}/gms;
-
+const BLOCK_PARSING_REGEX = /({{#(?<block_start>.*?) (?<block_value>.*?)}})(?<block_content>.*?(?:{{#(?<block_start_2>.*?) (.*?)}}(.*?){{\/\k<block_start_2>}}.*?)?){{\/\k<block_start>}}/gms;
 
 
 
@@ -16,6 +13,7 @@ function parseString(template: string) {
 	let template_left = template;
 	let m;
 	let true_index = 0;
+
 	while ((m = ITEM_PARSING_REGEX.exec(template_left)) != null) {
 		if (!m) break;
 		const start = m.index;
@@ -63,32 +61,153 @@ function parseString(template: string) {
 	return items;
 }
 
-function parseBlock(template: string) {
-    const blocks: block_inside[] = [];
-    let m;
-    let gtype:boolean|string = false;
-    let lastype = "";
-    let lastcondition = "";
-    while ((m = BLOCK_INSIDE_REGEX.exec(template)) !== null) {
-        if (!m) break;
-        lastype = m.groups?.block_start ? m.groups?.block_start.replace("#","") : undefined ?? lastype;
-        lastcondition = m.groups?.block_value ?? lastcondition;
-        if (!gtype) gtype = m.groups?.block_start.replace("#","") ?? false;
-        const block:block_inside = {
-            type: lastype as block_inside["type"],
-            content: parse(m.groups?.block_content ?? ""),
-            condition:  lastcondition ? new Function("data", `return !!(${lastcondition})`) : undefined,
-            str_condition : lastcondition
-        }
-        blocks.push(block);
+// type: lastype as block_inside["type"],
+// content: parse(m.groups?.block_content ?? ""),
+// condition:  lastcondition ? new Function("data", `return !!(${lastcondition})`) : undefined,
+// str_condition : lastcondition
 
-        const split = m.groups?.block_next?.split(" ") ?? [];
-        lastype = split[1] ? split[0].replace("#","") : split[0]  || "";
-        lastcondition = split.slice(1).join(" ") || "";
+const IF_OPEN = /{{#if (.*?)}}/gms;
+const ELSEIF = /{{#elseif (.*?)}}/gms;
+const ELSE = /{{#else}}/gms;
+const IF_CLOSE = /{{\/if}}/gms;
+
+function parseIfBlock(template: string) {
+    const blocks: block_inside[] = [];
+    
+    // get first if open using IF_OPEN
+    const item_order:{
+        index: number,
+        length : number,
+        type: string,
+        condition?: string,
+    }[] = [];
+    
+    const open_if = template.matchAll(IF_OPEN);
+    for (const m of open_if) {
+        const start = m.index;
+        const item = {
+            index: start as number,
+            length: m[0].length,
+            type: "if",
+            condition: m[1],
+        };
+        item_order.push(item);
+    }
+
+    
+    const open_elseif = template.matchAll(ELSEIF);
+    for (const m of open_elseif) {
+        const start = m.index;
+        const item = {
+            type: "elseif",
+            condition: m[1],
+            index: start as number,
+            length: m[0].length,
+        }
+        item_order.push(item);
+    }
+
+    const open_else = template.matchAll(ELSE);
+    for (const m of open_else) {
+        const start = m.index;
+        const item = {
+            type: "else",
+            index: start as number,
+            length: m[0].length,
+        }
+        item_order.push(item);
+    }
+
+    const ifclose = template.matchAll(IF_CLOSE);
+    for (const m of ifclose) {
+        const start = m.index;
+        const item = {
+            type: "ifclose",
+            index: start as number,
+            length: m[0].length,
+        }
+        item_order.push(item);
     }
 
 
-   
+    item_order.sort((a, b) => (a.index as number) - (b.index as number));
+
+    const temp_block:{
+        index: number,
+        length : number,
+        type: string,
+        condition?: string,
+    }[] = [];
+
+    if (item_order.length == 2 && item_order[0].type == "if" && item_order[1].type == "ifclose") {
+        blocks.push({
+            type: "if",
+            condition: new Function("data", `return !!(${item_order[0].condition})`) ?? undefined,
+            content: parse(template.substring(item_order[0].index + item_order[0].length, item_order[1].index)),
+            str_condition: item_order[0].condition,
+        });
+        return blocks;
+    }
+
+    // match opening if with matching closing if
+    for (const item of item_order) {
+        switch (item.type) {
+            case "if":
+                if (temp_block.length == 0) {
+                    temp_block.push(item);
+                }
+                break;
+            case "elseif":
+                // check if theres on open if
+                if (temp_block.length == 1) {
+                    const lastitem = temp_block.pop();
+                    if (lastitem) {
+                        blocks.push({
+                            type: lastitem.type as block_inside["type"],
+                            condition: new Function("data", `return !!(${lastitem.condition})`) ?? undefined,
+                            content: parse(template.substring(lastitem.index + lastitem.length, item.index)),
+                            str_condition: lastitem.condition,
+                        });
+                    }
+                }
+                temp_block.push(item);
+                break;
+            case "else":
+                // check if theres on open if
+                if (temp_block.length == 1) {
+                    const lastitem = temp_block.pop();
+                    if (lastitem) {
+                        blocks.push({
+                            type: lastitem.type as block_inside["type"],
+                            condition: lastitem.condition ? new Function("data", `return !!(${lastitem.condition})`) : undefined,
+                            content: parse(template.substring(lastitem.index + lastitem.length, item.index)),
+                            str_condition: lastitem.condition,
+                        });
+                    }
+                    temp_block.push(item);
+                }
+                break;
+            case "ifclose":
+                // check if if is inside another if block or not
+                // check if last if
+                if (temp_block.length == 1){
+                    const lastitem = temp_block.pop();
+                    if (lastitem) {
+                        const content = lastitem.type == "if" ? template.substring(lastitem.index + lastitem.length, item.index + item.length) : template.substring(lastitem.index + lastitem.length, item.index);
+                        blocks.push({
+                            type: lastitem.type as block_inside["type"],
+                            condition: lastitem.condition ? new Function("data", `return !!(${lastitem.condition})`) : undefined,
+                            content: parse(content),
+                            str_condition: lastitem.condition,
+                        });
+                    }
+                }
+                break;
+            default:
+
+                break;
+        }
+    }
 
     return blocks;
 }
@@ -108,7 +227,7 @@ function parse(template: string) {
 				blocks.push({
 					block_start: groups.block_start,
 					block_value: groups.block_value,
-					block_content:  parseBlock(m[0]),
+					block_content:  parseIfBlock(m[0]),
 					index: m.index as number,
 					index_end: (m.index as number) + m[0].length,
 				});

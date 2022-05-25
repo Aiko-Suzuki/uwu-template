@@ -3,8 +3,8 @@
 // This code was bundled using `deno bundle` and it's not recommended to edit it manually
 
 const ITEM_PARSING_REGEX = /\{{(.*?)}}/g;
-const BLOCK_PARSING_REGEX = /{{#(?<block_start>.*?) (?<block_value>.*?)}}(?<block_content>.*?){{\/\k<block_start>}}/gms;
-const BLOCK_INSIDE_REGEX = /(?:{{(?<block_start>.*?)(?: (?<block_value>.*?))}})?(?<block_content>.*?)?{{(?:(?<block_next>#.*?|\/.*?))}}/gms;
+const BLOCK_PARSING_REGEX = /({{#(?<block_start>.*?) (?<block_value>.*?)}})(?<block_content>.*?(?:{{#(\k<block_start>.*?) (\k<block_value>.*?)}}(.*?){{\/\k<block_start>}}.*?){0,}){{\/\k<block_start>}}/gms;
+const BLOCK_INSIDE_REGEX = /({{#(?<block_start>.*?) (?<block_value>.*?)}})(?<block_content>.*?(?:({{#(?<block_value_2>.*?) (.*?)}}(.*?){{(\/\k<block_value_2>)}}).*?){0,}){{(?:(?<block_next>#.*?|\/.*?))}}/gs;
 function parseString(template) {
     const items = [];
     let template_left = template;
@@ -61,11 +61,14 @@ function parseBlock(template) {
     let gtype = false;
     let lastype = "";
     let lastcondition = "";
-    while((m = BLOCK_INSIDE_REGEX.exec(template)) !== null){
+    while(m = BLOCK_INSIDE_REGEX.exec(template)){
         if (!m) break;
         lastype = m.groups?.block_start ? m.groups?.block_start.replace("#", "") : undefined ?? lastype;
         lastcondition = m.groups?.block_value ?? lastcondition;
-        if (!gtype) gtype = m.groups?.block_start.replace("#", "") ?? false;
+        if (!gtype) {
+            gtype = m.groups?.block_start.replace("#", "") ?? "";
+        }
+        console.log(m.groups);
         const block = {
             type: lastype,
             content: parse(m.groups?.block_content ?? ""),

@@ -11,7 +11,7 @@ interface block {
 }
 
 interface block_inside {
-    type: "if" | "else" | "elseif" | "switch" | "case" | "default";
+    type: "if" | "else" | "elseif";
     content: any;
     condition?: any;
     str_condition?: string;
