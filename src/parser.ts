@@ -3,7 +3,7 @@ import { item, block,block_inside } from "./interface.ts";
 const ITEM_PARSING_REGEX = /\{{(.*?)}}/g;
 
 
-const BLOCK_PARSING_REGEX = /({{#(?<block_start>.*?) (?<block_value>.*?)}})(?<block_content>.*?(?:{{#(?<block_start_2>.*?) (.*?)}}(.*?){{\/\k<block_start_2>}}.*?)?){{\/\k<block_start>}}/gms;
+const BLOCK_PARSING_REGEX = /{{\/(?<block_close>.*?)}}|{{#else}}|{{#(?<block_start>.*?) (?<block_value>.*?)}}/gms;
 
 
 
@@ -66,14 +66,9 @@ function parseString(template: string) {
 // condition:  lastcondition ? new Function("data", `return !!(${lastcondition})`) : undefined,
 // str_condition : lastcondition
 
-const IF_OPEN = /{{#if (.*?)}}/gms;
-const ELSEIF = /{{#elseif (.*?)}}/gms;
-const ELSE = /{{#else}}/gms;
-const IF_CLOSE = /{{\/if}}/gms;
 
 function parseIfBlock(template: string) {
     const blocks: block_inside[] = [];
-    
     // get first if open using IF_OPEN
     const item_order:{
         index: number,
@@ -81,74 +76,75 @@ function parseIfBlock(template: string) {
         type: string,
         condition?: string,
     }[] = [];
-    
-    const open_if = template.matchAll(IF_OPEN);
-    for (const m of open_if) {
+    let first_if:any;
+    let temp_block:{
+        index: number,
+        length : number,
+        type: string,
+        condition?: string,
+    }[]|any = [];
+
+    function addItem(type:string,m:any){
         const start = m.index;
         const item = {
             index: start as number,
             length: m[0].length,
-            type: "if",
-            condition: m[1],
+            type: type,
+            condition: m.groups?.block_value,
         };
         item_order.push(item);
     }
-
     
-    const open_elseif = template.matchAll(ELSEIF);
-    for (const m of open_elseif) {
-        const start = m.index;
-        const item = {
-            type: "elseif",
-            condition: m[1],
-            index: start as number,
-            length: m[0].length,
-        }
-        item_order.push(item);
-    }
+    const open_if = template.matchAll(BLOCK_PARSING_REGEX);
+    for (const m of open_if) {
+        const type = m.groups?.block_start ? m.groups?.block_start : m.groups?.block_close ? "ifclose" : "else";
 
-    const open_else = template.matchAll(ELSE);
-    for (const m of open_else) {
-        const start = m.index;
-        const item = {
-            type: "else",
-            index: start as number,
-            length: m[0].length,
+        switch (type) {
+            case "if":
+                if (!first_if) {
+                    first_if = m;
+                    addItem(type,m);
+                } else {
+                    temp_block.push(m)
+                }
+                break;
+            case "elseif":
+                if (temp_block.length == 0) {
+                    addItem(type,m);
+                }
+                break;
+            case "else":
+                if (temp_block.length == 0) {
+                    addItem(type,m);
+                }
+                break;
+            case "ifclose":
+                if (temp_block.length == 0) {
+                    addItem(type,m);
+                } else {
+                    temp_block.pop();
+                }
+                break;
+            default:
+                break;
         }
-        item_order.push(item);
-    }
-
-    const ifclose = template.matchAll(IF_CLOSE);
-    for (const m of ifclose) {
-        const start = m.index;
-        const item = {
-            type: "ifclose",
-            index: start as number,
-            length: m[0].length,
-        }
-        item_order.push(item);
     }
 
 
     item_order.sort((a, b) => (a.index as number) - (b.index as number));
 
-    const temp_block:{
-        index: number,
-        length : number,
-        type: string,
-        condition?: string,
-    }[] = [];
-
     if (item_order.length == 2 && item_order[0].type == "if" && item_order[1].type == "ifclose") {
+        const content = template.substring(item_order[0].index + item_order[0].length, item_order[1].index).trim();
         blocks.push({
             type: "if",
             condition: new Function("data", `return !!(${item_order[0].condition})`) ?? undefined,
-            content: parse(template.substring(item_order[0].index + item_order[0].length, item_order[1].index)),
+            content: parse(content),
             str_condition: item_order[0].condition,
         });
         return blocks;
     }
 
+    temp_block = [];
     // match opening if with matching closing if
     for (const item of item_order) {
         switch (item.type) {
@@ -162,10 +158,11 @@ function parseIfBlock(template: string) {
                 if (temp_block.length == 1) {
                     const lastitem = temp_block.pop();
                     if (lastitem) {
+                        const content = template.substring(lastitem.index + lastitem.length, item.index).trim();
                         blocks.push({
                             type: lastitem.type as block_inside["type"],
                             condition: new Function("data", `return !!(${lastitem.condition})`) ?? undefined,
-                            content: parse(template.substring(lastitem.index + lastitem.length, item.index)),
+                            content: parse(content),
                             str_condition: lastitem.condition,
                         });
                     }
@@ -177,10 +174,11 @@ function parseIfBlock(template: string) {
                 if (temp_block.length == 1) {
                     const lastitem = temp_block.pop();
                     if (lastitem) {
+                        const content = template.substring(lastitem.index + lastitem.length, item.index).trim();
                         blocks.push({
                             type: lastitem.type as block_inside["type"],
                             condition: lastitem.condition ? new Function("data", `return !!(${lastitem.condition})`) : undefined,
-                            content: parse(template.substring(lastitem.index + lastitem.length, item.index)),
+                            content: parse(content),
                             str_condition: lastitem.condition,
                         });
                     }
@@ -193,7 +191,7 @@ function parseIfBlock(template: string) {
                 if (temp_block.length == 1){
                     const lastitem = temp_block.pop();
                     if (lastitem) {
-                        const content = lastitem.type == "if" ? template.substring(lastitem.index + lastitem.length, item.index + item.length) : template.substring(lastitem.index + lastitem.length, item.index);
+                        const content = lastitem.type == "if" ? template.substring(lastitem.index + lastitem.length, item.index + item.length) : template.substring(lastitem.index + lastitem.length, item.index).trim();
                         blocks.push({
                             type: lastitem.type as block_inside["type"],
                             condition: lastitem.condition ? new Function("data", `return !!(${lastitem.condition})`) : undefined,
@@ -220,30 +218,61 @@ function parse(template: string) {
 	let template_left = template;
 	// parse block with the BLOCK_PARSING_REGEX
 	const match = template.matchAll(BLOCK_PARSING_REGEX);
+    let first_block;
+    let closing_block;
+    let temp_block:any[] = [];
+
+    // find matching opening and closing block && ignore nested blocks
 	for (const m of match) {
-		const groups = m.groups;
-		switch (groups?.block_start) {
-			case "if": {
+        const groups = m.groups;
+        if (groups?.block_start && !first_block) {
+            first_block = m;
+            continue;
+        }
+
+        if (groups?.block_start && groups?.block_start !== "elseif" ) {
+            temp_block.push(m);
+            continue;
+        }
+
+
+        if (groups?.block_close && temp_block.length > 0) {
+            temp_block.pop();
+            continue;
+        }
+
+        if (groups?.block_close && first_block && temp_block.length == 0) {
+            closing_block = m;
+            continue;
+        }
+		
+	}
+
+    if (first_block && closing_block) {
+        switch (first_block.groups?.block_start) {
+            case "if": {
+                const content = template.substring(first_block?.index as number, closing_block?.index as number + closing_block.length + first_block?.length)
 				blocks.push({
-					block_start: groups.block_start,
-					block_value: groups.block_value,
-					block_content:  parseIfBlock(m[0]),
-					index: m.index as number,
-					index_end: (m.index as number) + m[0].length,
+					block_start: first_block.groups?.block_start,
+					block_value: first_block.groups?.block_startblock_value,
+					block_content:  parseIfBlock(content),
+					index: first_block?.index as number,
+					index_end: closing_block?.index as number + closing_block.length + first_block?.length,
 				});
 				break;
 			}
 			case "each": {
-				blocks.push({
-					block_start: groups.block_start,
-					block_value: groups.block_value,
-					block_content: parse(groups.block_content),
-					index: m.index as number,
-					index_end: (m.index as number) + m[0].length,
+                const content = template.substring(first_block?.index as number + first_block[0].length , closing_block.index);
+                blocks.push({
+					block_start: first_block.groups?.block_start,
+					block_value: first_block.groups?.block_value,
+					block_content:  parse(content),
+					index: first_block?.index as number,
+					index_end: (closing_block.index as number) + closing_block?.length,
 				});
 			}
-		}
-	}
+        }
+    }
 
 	for (let index = 0; index < blocks.length; index++) {
 		const block = blocks[index];
@@ -262,7 +291,9 @@ function parse(template: string) {
 		});
 		// check if its last block
 		template_left = template_left.substring(block.index_end);
+        //console.log(template_left);
 		if (index === blocks.length - 1) {
+            // check if string contains only whitespace
 			items.push({
 				title: "after_var",
 				content: parseString(template_left),

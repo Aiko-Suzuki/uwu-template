@@ -36,7 +36,7 @@ const COMPILE_OPTIONS = {
 
 class renderObject {
 	public options = COMPILE_OPTIONS;
-	private compiled: any;
+	public compiled: any;
 	private data: any;
 	private render_cache: Record<string, any> = {};
 	private var_cache:Record<string, any> = {};
@@ -87,14 +87,11 @@ class renderObject {
 		const old_cache = this.var_cache;
 
 		const value = block.block_value == "this" ? this.data : this.data[block.block_value];
-		const child_len = block.block_content.childs.length;
 
 		for (let vindex = 0; vindex < value.length; vindex++) {
 			this.data = value[vindex];
 			this.var_cache = {};
-			for (let index = 0; index < child_len; index++) {
-				result += this.render(block.block_content.childs[index]);
-			}
+			result += this.render(block.block_content);
 		}
 		this.data = old_data;
 		this.var_cache = old_cache;
@@ -142,7 +139,7 @@ class renderObject {
 
 function compile(template: string, options = COMPILE_OPTIONS) {
 	const tree = new renderObject(template, options);
-
+    Deno.writeTextFileSync("template.json", JSON.stringify(tree.compiled, null, 2));
 	const compiled = function (data: any) {
 		return tree.start(data);
 	};
