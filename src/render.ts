@@ -94,7 +94,7 @@ class renderObject {
 		let result = "";
 		const old_data = this.data;
 
-		const value = block.block_value == "this" ? this.data : block.fn.apply(this.data);
+		const value = block.block_value == "this" ? this.data : new Function("return this." + block.block_value).apply(this.data);
 
 		for (let vindex = 0; vindex < value.length; vindex++) {
 			this.data = value[vindex];

@@ -218,7 +218,8 @@ function parse(template: string) {
 
 	let template_left = template;
 	// parse block with the BLOCK_PARSING_REGEX
-	const match = template.matchAll(new RegExp(BLOCK_PARSING_REGEX, "g"));
+    const regex = new RegExp(BLOCK_PARSING_REGEX, "gms");
+	const match = template.matchAll(regex);
     let first_block;
     let closing_block;
     let temp_block:any[] = [];
@@ -248,7 +249,6 @@ function parse(template: string) {
         }
 		
 	}
-
     if (first_block && closing_block) {
         switch (first_block.groups?.block_start) {
             case "if": {
@@ -268,7 +268,7 @@ function parse(template: string) {
                 blocks.push({
 					block_start: first_block.groups?.block_start,
 					block_value: first_block.groups?.block_value,
-                    fn : new Function("data", "return this." + first_block.groups?.block_value),
+                    fn: first_block.groups?.block_value ? new Function("data", `return this.${first_block.groups?.block_value}`) : undefined,
 					block_content:  parse(content),
 					index: first_block?.index as number,
 					index_end: (closing_block.index as number) + closing_block?.length+ first_block[0].length ,
@@ -294,7 +294,7 @@ function parse(template: string) {
 		});
 		// check if its last block
 		template_left = template_left.substring(block.index_end - 1);
-        if (BLOCK_PARSING_REGEX.test(template_left)) {
+        if (regex.test(template_left)) {
             items.push({
                 title: "block",
                 content: parse(template_left),
