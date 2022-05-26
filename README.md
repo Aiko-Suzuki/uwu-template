@@ -4,7 +4,7 @@
 - [renderTemplate](https://github.com/Aiko-Suzuki/nnt-template/blob/main/src/render.ts#L110)
 - [handlebars](https://handlebarsjs.com/)
 
-![benchmark](https://user-images.githubusercontent.com/42787030/170067627-8db2c86a-b8fe-48af-8662-3a86abac445f.png)
+![benchmark](https://user-images.githubusercontent.com/42787030/170523368-9483c678-2a04-407f-b2f2-68a05d1e9d87.png)
 
 ## How to use
 ```js

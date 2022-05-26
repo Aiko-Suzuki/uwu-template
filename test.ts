@@ -28,11 +28,8 @@ for (let i = 1; i <= 100; i++) {
 	});
 }
 const template_compiled = nnt.compile(`${template}`);
-
-const performance_start = performance.now();
 const res = template_compiled(data_100);
-const performance_end = performance.now();
-console.log(`${performance_end - performance_start}ms`);
+
 
 const other_test = Deno.readTextFileSync("bench/pagi.nnt");
 const other_template_compiled = nnt.compile(`${other_test}`);
@@ -54,5 +51,5 @@ const res_2 = other_template_compiled([
     }
 ]);
 
-Deno.writeTextFileSync("test_out.html", res);
-Deno.writeTextFileSync("test_out_2.html", res_2);
+Deno.writeTextFileSync("output/test_out.html", res);
+Deno.writeTextFileSync("output/test_out_2.html", res_2);

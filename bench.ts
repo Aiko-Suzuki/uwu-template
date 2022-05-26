@@ -1,5 +1,7 @@
+// deno-lint-ignore-file require-await
 import * as nnt from "./mod.ts";
 import { Handlebars } from "https://deno.land/x/handlebars@v0.8.0/mod.ts";
+import * as pug from "https://cdn.esm.sh/v56/pug@3.0.2/deno/pug.bundle.js";
 
 // format date to hour:minute yyyy-mm-dd
 
@@ -31,9 +33,12 @@ nnt.registerHelper("formatdate",formatdate);
 
 const template = Deno.readTextFileSync("bench/test.nnt");
 const hbs_template = "bench/test.hbs";
+const pug_template = pug.compileFile('bench/test.pug');
 
 
-const nnt_template = nnt.compile(`${template}`);
+const nnt_template = nnt.compile(`${template}`,{
+    escape : true,
+});
 
 interface item {
 	title: string;
@@ -61,7 +66,7 @@ function generateArray(number:number){
 
 const data_100 = generateArray(100);
 // 100 benchmark
-Deno.bench("[100] renderTemplate",() => {
+Deno.bench("[100] uwu-template",() => {
     nnt_template(data_100);
 });
 
@@ -71,45 +76,38 @@ Deno.bench("[100] handlebars", async () => {
     });
 });
 
-const data_500 = generateArray(500);
-// 500 benchmark
-Deno.bench("[500] renderTemplate", () => {
-	nnt_template(data_500);
+Deno.bench("[100] Pug", async () => {
+	pug_template({
+        data : data_100,
+        formatdate,
+    })
 });
 
-Deno.bench("[500] handlebars", async () => {
-	await handle.render(hbs_template, {
-        data: data_500,
-    });
-});
 
 const data_1k = generateArray(1000);
 // 1k benchmark
-Deno.bench("[1k] renderTemplate", () => {
+Deno.bench("[1k] uwu-template", () => {
 	nnt_template(data_1k);
 });
 
 Deno.bench("[1k] handlebars", async () => {
 	await handle.render(hbs_template, {
         data: data_1k,
+        
     });
 });
 
-const data_5k = generateArray(5000);
-// 5k benchmark
-Deno.bench("[5k] renderTemplate", () => {
-	nnt_template(data_5k);
-});
-Deno.bench("[5k] handlebars", async () => {
-	await handle.render(hbs_template, {
-        data: data_5k,
-    });
+Deno.bench("[1k] Pug", async () => {
+	pug_template({
+        data : data_1k,
+        formatdate
+    })
 });
 
 
 const data_10k = generateArray(10000);
 // 10k benchmark
-Deno.bench("[10k] renderTemplate", () => {
+Deno.bench("[10k] uwu-template", () => {
 	nnt_template(data_10k);
 });
 Deno.bench("[10k] handlebars", async () => {
@@ -117,3 +115,10 @@ Deno.bench("[10k] handlebars", async () => {
         data: data_10k,
     });
 });
+Deno.bench("[10k] Pug", async () => {
+	pug_template({
+        data : data_10k,
+        formatdate
+    })
+});
+

@@ -19,14 +19,14 @@ const entity: { [char: string]: string } = {
 };
 
 function escape(text: string): string {
-	let result = "";
+    let result = "";
     let text_left = text;
-	let m;
-	while ((m = ESCAPE_REGEX.exec(text_left))) {
-		result += text_left.slice(0, m.index);
+    let m;
+    while ((m = ESCAPE_REGEX.exec(text_left))) {
+        result += text_left.slice(0, m.index);
         result += entity[m[0]];
         text_left = text_left.slice(m.index + 1);
-	}
+    }
     return result + text_left;
 }
 
@@ -39,7 +39,6 @@ class renderObject {
 	public compiled: any;
 	private data: any;
 	private render_cache: Record<string, any> = {};
-	private var_cache:Record<string, any> = {};
 
 	constructor(public template: string | item, options = COMPILE_OPTIONS) {
 		this.options = options;
@@ -51,7 +50,13 @@ class renderObject {
 			key = split[1];
 		return this.render_cache[name] = helpers[action]
 			? () => helpers[action](this.data[key])
-            : () =>( this.options.escape && typeof this.data[name] == "string") ? escape(this.data[name]) : this.data[name];
+            : () => {
+                const val = this.data[name];
+                if (this.options.escape ) {
+                    return typeof val == "string" ? escape(val) : val;
+                }
+                return val;
+            };
 	}
 
 	private renderString(item: item) {
@@ -84,17 +89,14 @@ class renderObject {
 	private renderForeach(block: block) {
 		let result = "";
 		const old_data = this.data;
-		const old_cache = this.var_cache;
 
 		const value = block.block_value == "this" ? this.data : this.data[block.block_value];
 
 		for (let vindex = 0; vindex < value.length; vindex++) {
 			this.data = value[vindex];
-			this.var_cache = {};
 			result += this.render(block.block_content);
 		}
 		this.data = old_data;
-		this.var_cache = old_cache;
 		return result;
 	}
 
