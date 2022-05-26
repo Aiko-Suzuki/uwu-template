@@ -24,12 +24,8 @@ const handle = new Handlebars({
     cachePartials: true,
     defaultLayout: 'main',
     compilerOptions: {},
-    helpers: {
-        formatdate
-    },
+    helpers: {},
 });
-
-nnt.registerHelper("formatdate",formatdate);
 
 const template = Deno.readTextFileSync("bench/test.nnt");
 const hbs_template = "bench/test.hbs";
@@ -78,8 +74,7 @@ Deno.bench("[100] handlebars", async () => {
 
 Deno.bench("[100] Pug", async () => {
 	pug_template({
-        data : data_100,
-        formatdate,
+        data : data_100
     })
 });
 
@@ -93,14 +88,12 @@ Deno.bench("[1k] uwu-template", () => {
 Deno.bench("[1k] handlebars", async () => {
 	await handle.render(hbs_template, {
         data: data_1k,
-        
     });
 });
 
 Deno.bench("[1k] Pug", async () => {
 	pug_template({
-        data : data_1k,
-        formatdate
+        data : data_1k
     })
 });
 
@@ -117,8 +110,7 @@ Deno.bench("[10k] handlebars", async () => {
 });
 Deno.bench("[10k] Pug", async () => {
 	pug_template({
-        data : data_10k,
-        formatdate
+        data : data_10k
     })
 });
 

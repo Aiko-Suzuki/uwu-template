@@ -30,7 +30,7 @@ each item in data
             else 
                 .main__table-text.main__table-text--red Hidden
         td
-            .main__table-text= formatdate(startdate)
+            .main__table-text= startdate
         td
             .main__table-btns
             a.main__table-btn.main__table-btn--view(href='#' id=`toggleVisible-${item.id}` data-visible=`${item.visible}` data-action='visible' data-target=`/admin/anime/${item.id}`)
