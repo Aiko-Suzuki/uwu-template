@@ -22,6 +22,7 @@ function parseString(template: string) {
 			type: "var",
 			content: m[0],
 			var: m[1],
+            fn : new Function("data", "return this." + m[1]),
 			index: start,
 			index_end: true_index + end,
 		};

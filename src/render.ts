@@ -44,14 +44,18 @@ class renderObject {
 		this.options = options;
 		this.compiled = typeof template == "string" ? parse(template) : template;
 	}
-	private stringCache(name: string) {
+	private stringCache(item:any) {
+        const name = item.var as string;
 		const split = name.split(" "),
 			action = split[0],
 			key = split[1];
+        // check if contains dot
+
+
 		return this.render_cache[name] = helpers[action]
 			? () => helpers[action](this.data[key])
             : () => {
-                const val = this.data[name];
+                const val = name == "this" ? this.data : item?.fn.apply(this.data);
                 if (this.options.escape ) {
                     return typeof val == "string" ? escape(val) : val;
                 }
@@ -60,7 +64,7 @@ class renderObject {
 	}
 
 	private renderString(item: item) {
-		return this.render_cache[item.var as string]?.() ?? this.stringCache(item.var as string)();
+		return this.render_cache[item.var as string]?.() ?? this.stringCache(item)();
 	}
 
 	private renderBlock(block: block) {

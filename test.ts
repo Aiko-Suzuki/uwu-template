@@ -1,5 +1,6 @@
 import * as nnt from "./mod.ts";
 const template = Deno.readTextFileSync("bench/test.nnt");
+const template_loop = Deno.readTextFileSync("bench/array_loop.nnt");
 
 const formatdate = (date: string) => {
     const d = new Date(date);
@@ -28,6 +29,7 @@ for (let i = 1; i <= 100; i++) {
 	});
 }
 const template_compiled = nnt.compile(`${template}`);
+const template_loop_compiled = nnt.compile(`${template_loop}`);
 const res = template_compiled(data_100);
 
 const other_test = Deno.readTextFileSync("bench/pagi.nnt");
@@ -50,5 +52,13 @@ const res_2 = other_template_compiled([
     }
 ]);
 
+const res3 = template_loop_compiled([
+    "a",
+    "b",
+    "c",
+]);
+
 Deno.writeTextFileSync("output/test_out.html", res);
 Deno.writeTextFileSync("output/test_out_2.html", res_2);
+Deno.writeTextFileSync("output/test_out_3.html", res3);
+
