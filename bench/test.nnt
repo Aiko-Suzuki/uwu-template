@@ -6,7 +6,7 @@
                 <img src="/api/anime/{{id}}/thumb" alt="">
             </div>
             <div class="main__meta">
-                <h3>{{title}}</h3>
+                <h3>{{JSON title}}</h3>
                 <span>ID : {{id}}, SLUG : {{slug}}</span>
             </div>
         </div>

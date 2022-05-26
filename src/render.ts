@@ -50,7 +50,7 @@ class renderObject {
         let key: string;
 
 		return this.render_cache[name] = helpers[item.helper]
-			? () => helpers[action](this.data[key])
+			? () => helpers[item.helper](this.data[key])
             : () => {
                 const val = name == "this" ? this.data : item?.fn.apply(this.data);
                 if (this.options.escape ) {
