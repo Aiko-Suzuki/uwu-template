@@ -267,6 +267,7 @@ function parse(template: string) {
                 blocks.push({
 					block_start: first_block.groups?.block_start,
 					block_value: first_block.groups?.block_value,
+                    fn : new Function("data", "return this." + first_block.groups?.block_value),
 					block_content:  parse(content),
 					index: first_block?.index as number,
 					index_end: (closing_block.index as number) + closing_block?.length+ first_block[0].length ,

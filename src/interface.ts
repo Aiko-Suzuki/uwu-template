@@ -3,6 +3,7 @@ interface block {
 	block_start: string;
 	block_value: string;
     block_value_2?: string;
+    fn ?:any;
 	block_content: any;
 	block_content_2?: any;
     block_content_3?: any;
