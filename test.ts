@@ -52,11 +52,15 @@ const res_2 = other_template_compiled([
     }
 ]);
 
-const res3 = template_loop_compiled([
-    "a",
-    "b",
-    "c",
-]);
+const res3 = template_loop_compiled({
+    "items": {
+        list : [
+            "item 1",
+            "item 2",
+            "item 3",
+        ],
+    },
+});
 
 Deno.writeTextFileSync("output/test_out.html", res);
 Deno.writeTextFileSync("output/test_out_2.html", res_2);

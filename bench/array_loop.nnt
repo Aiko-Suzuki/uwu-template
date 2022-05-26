@@ -1,3 +1,5 @@
-{{#each this}}
-{{this}}
-{{/each}}
+{{#if this.items.list}}
+    {{#each items.list}}
+        {{this}}
+    {{/each}}
+{{/if}}

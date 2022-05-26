@@ -255,7 +255,7 @@ function parse(template: string) {
                 const content = template.substring(first_block?.index as number, closing_block?.index as number + closing_block.length + first_block?.length)
 				blocks.push({
 					block_start: first_block.groups?.block_start,
-					block_value: first_block.groups?.block_startblock_value,
+					block_value: first_block.groups?.block_value,
 					block_content:  parseIfBlock(content),
 					index: first_block?.index as number,
 					index_end: closing_block?.index as number + closing_block.length + first_block?.length,
@@ -264,6 +264,7 @@ function parse(template: string) {
 			}
 			case "each": {
                 const content = template.substring(first_block?.index as number + first_block[0].length , closing_block.index);
+                console.log(first_block.groups?.block_value);
                 blocks.push({
 					block_start: first_block.groups?.block_start,
 					block_value: first_block.groups?.block_value,
