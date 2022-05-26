@@ -144,12 +144,10 @@ class renderObject {
 }
 
 function compile(template: string, options = COMPILE_OPTIONS) {
-	const tree = new renderObject(template, options);
-	const compiled = function (data: any) {
-		return tree.start(data);
-	};
-	return compiled;
+	const compiled = new renderObject(template, options);
+	return compiled.start.bind(compiled);
 }
+
 const compiled_list = new Map<string, any>();
 
 function renderTemplate(key: string, data: any, template: string) {

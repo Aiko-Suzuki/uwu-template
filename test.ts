@@ -30,7 +30,6 @@ for (let i = 1; i <= 100; i++) {
 const template_compiled = nnt.compile(`${template}`);
 const res = template_compiled(data_100);
 
-
 const other_test = Deno.readTextFileSync("bench/pagi.nnt");
 const other_template_compiled = nnt.compile(`${other_test}`);
 const res_2 = other_template_compiled([

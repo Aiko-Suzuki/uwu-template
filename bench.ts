@@ -32,9 +32,7 @@ const hbs_template = "bench/test.hbs";
 const pug_template = pug.compileFile('bench/test.pug');
 
 
-const nnt_template = nnt.compile(`${template}`,{
-    escape : true,
-});
+const nnt_template = nnt.compile(`${template}`);
 
 interface item {
 	title: string;
