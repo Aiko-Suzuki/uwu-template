@@ -3,6 +3,7 @@
 
 - [renderTemplate](https://github.com/Aiko-Suzuki/nnt-template/blob/main/src/render.ts#L110)
 - [handlebars](https://handlebarsjs.com/)
+- [Pug](https://github.com/pugjs/pug)
 
 ![benchmark](https://user-images.githubusercontent.com/42787030/170523368-9483c678-2a04-407f-b2f2-68a05d1e9d87.png)
 
