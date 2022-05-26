@@ -46,13 +46,10 @@ class renderObject {
 	}
 	private stringCache(item:any) {
         const name = item.var as string;
-		const split = name.split(" "),
-			action = split[0],
-			key = split[1];
-        // check if contains dot
+        let action: string;
+        let key: string;
 
-
-		return this.render_cache[name] = helpers[action]
+		return this.render_cache[name] = helpers[item.helper]
 			? () => helpers[action](this.data[key])
             : () => {
                 const val = name == "this" ? this.data : item?.fn.apply(this.data);

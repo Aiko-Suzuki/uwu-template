@@ -13,21 +13,27 @@ function parseString(template: string) {
 	let template_left = template;
 	let m;
 	let true_index = 0;
-
-	while ((m = ITEM_PARSING_REGEX.exec(template_left)) != null) {
+    const regex = new RegExp(ITEM_PARSING_REGEX, "gms");
+	while ((m = regex.exec(template_left)) != null) {
 		if (!m) break;
 		const start = m.index;
 		const end = m.index + m[0].length;
+        const split = m[1].split(" "),
+            action = split[0],
+            key = split[1];
+
 		const item = {
 			type: "var",
 			content: m[0],
 			var: m[1],
-            fn : new Function("data", "return this." + m[1]),
+            fn : new Function("data", "return this." + (key ? key : m[1])),
+            helper: key ? action : undefined,
+            key : key,
 			index: start,
 			index_end: true_index + end,
 		};
 		const before = template_left.substring(0, item.index);
-		if (ITEM_PARSING_REGEX.test(before)) {
+		if (regex.test(before)) {
 			items.push({
 				title: "before_block",
 				content: parseString(before),
@@ -264,7 +270,6 @@ function parse(template: string) {
 			}
 			case "each": {
                 const content = template.substring(first_block?.index as number + first_block[0].length , closing_block.index);
-                console.log(first_block.groups?.block_value);
                 blocks.push({
 					block_start: first_block.groups?.block_start,
 					block_value: first_block.groups?.block_value,

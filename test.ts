@@ -28,29 +28,29 @@ for (let i = 1; i <= 100; i++) {
 		visible: Math.floor(Math.random() * 3) + 1,
 	});
 }
-// const template_compiled = nnt.compile(`${template}`);
+const template_compiled = nnt.compile(`${template}`);
 const template_loop_compiled = nnt.compile(`${template_loop}`);
-// const res = template_compiled(data_100);
+const res = template_compiled(data_100);
 
-// const other_test = Deno.readTextFileSync("bench/pagi.nnt");
-// const other_template_compiled = nnt.compile(`${other_test}`);
-// const res_2 = other_template_compiled([
-//     {
-//         "type": "page",
-//         "page": 1,
-//         "active": true
-//     },
-//     {
-//         "type": "page",
-//         "page": 2,
-//         "active": false
-//     },
-//     {
-//         "type": "page",
-//         "page": 3,
-//         "active": false
-//     }
-// ]);
+const other_test = Deno.readTextFileSync("bench/pagi.nnt");
+const other_template_compiled = nnt.compile(`${other_test}`);
+const res_2 = other_template_compiled([
+    {
+        "type": "page",
+        "page": 1,
+        "active": true
+    },
+    {
+        "type": "page",
+        "page": 2,
+        "active": false
+    },
+    {
+        "type": "page",
+        "page": 3,
+        "active": false
+    }
+]);
 
 const res3 = template_loop_compiled({
     "items": {
@@ -62,7 +62,7 @@ const res3 = template_loop_compiled({
     },
 });
 
-// Deno.writeTextFileSync("output/test_out.html", res);
-// Deno.writeTextFileSync("output/test_out_2.html", res_2);
+Deno.writeTextFileSync("output/test_out.html", res);
+Deno.writeTextFileSync("output/test_out_2.html", res_2);
 Deno.writeTextFileSync("output/test_out_3.html", res3);
 
