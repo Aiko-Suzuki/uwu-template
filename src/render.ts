@@ -46,11 +46,9 @@ class renderObject {
 	}
 	private stringCache(item:any) {
         const name = item.var as string;
-        let action: string;
-        let key: string;
 
 		return this.render_cache[name] = helpers[item.helper]
-			? () => helpers[item.helper](this.data[key])
+			? () => helpers[item.helper](item?.fn.apply(this.data))
             : () => {
                 const val = name == "this" ? this.data : item?.fn.apply(this.data);
                 if (this.options.escape ) {
