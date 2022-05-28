@@ -1,6 +1,6 @@
 import * as nnt from "./mod.ts";
-const template = Deno.readTextFileSync("bench/test.nnt");
-const template_loop = Deno.readTextFileSync("bench/array_loop.nnt");
+const template = Deno.readTextFileSync("bench/template/test.nnt");
+const template_loop = Deno.readTextFileSync("bench/template/array_loop.nnt");
 
 const formatdate = (date: string) => {
     const d = new Date(date);
@@ -14,11 +14,11 @@ const formatdate = (date: string) => {
 
 nnt.registerHelper("formatdate",formatdate);
 
-const data_100 = [];
+const data = [];
 
 // randomly fill the data array with item
 for (let i = 1; i <= 100; i++) {
-	data_100.push({
+	data.push({
 		title: "Test Title &" + i,
 		slug: "test-title>" + i,
 		id: i,
@@ -30,9 +30,9 @@ for (let i = 1; i <= 100; i++) {
 }
 const template_compiled = nnt.compile(`${template}`);
 const template_loop_compiled = nnt.compile(`${template_loop}`);
-const res = template_compiled(data_100);
+const res = template_compiled(data);
 
-const other_test = Deno.readTextFileSync("bench/pagi.nnt");
+const other_test = Deno.readTextFileSync("bench/template/pagi.nnt");
 const other_template_compiled = nnt.compile(`${other_test}`);
 const res_2 = other_template_compiled([
     {
