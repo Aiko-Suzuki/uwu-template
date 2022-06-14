@@ -1,5 +1,6 @@
 
 {{#each this}}
+{{#if this.id}}
 <tr id="list_item">
     <td>
         <div class="main__user">
@@ -46,4 +47,5 @@
         </div>
     </td>
 </tr>
+{{/if}}
 {{/each}}

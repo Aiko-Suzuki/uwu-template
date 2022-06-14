@@ -103,37 +103,29 @@ function parseIfBlock(template: string) {
 
 	const open_if = template.matchAll(new RegExp(BLOCK_PARSING_REGEX, "g"));
 	for (const m of open_if) {
-		const type = m.groups?.block_start ? m.groups?.block_start : m.groups?.block_close ? "ifclose" : "else";
 
-		switch (type) {
-			case "if":
-				if (!first_if) {
-					first_if = m;
-					addItem(type, m);
-				} else {
-					temp_block.push(m);
-				}
-				break;
-			case "elseif":
-				if (temp_block.length == 0) {
-					addItem(type, m);
-				}
-				break;
-			case "else":
-				if (temp_block.length == 0) {
-					addItem(type, m);
-				}
-				break;
-			case "ifclose":
-				if (temp_block.length == 0) {
-					addItem(type, m);
-				} else {
-					temp_block.pop();
-				}
-				break;
-			default:
-				break;
-		}
+        if (m.groups?.block_start == "if") {
+            if (!first_if) {
+                first_if = m;
+                addItem("if", m);
+            } else {
+                temp_block.push(m);
+            }
+        } else if (m.groups?.block_start == "elseif") {
+            if (temp_block.length == 0) {
+                addItem("elseif", m);
+            }
+        } else if (m.groups?.block_close == "if") {
+            if (temp_block.length == 0) {
+                addItem("ifclose", m);
+            } else {
+                temp_block.pop();
+            }
+        } else if (!m.groups?.block_start && !m.groups?.block_close) {
+            if (temp_block.length == 0) {
+                addItem("else", m);
+            }
+        }
 	}
 
 	item_order.sort((a, b) => (a.index as number) - (b.index as number));
