@@ -1,3 +1,4 @@
+// deno-lint-ignore-file
 import { item, block, block_inside } from "./interface.ts";
 
 const ITEM_PARSING_REGEX = /\{{(.*?)}}/g;
@@ -249,7 +250,7 @@ function parse(template: string) {
 			continue;
 		}
 	}
-    
+
 	if (first_block && closing_block) {
 		switch (first_block.groups?.block_start) {
 			case "if": {

@@ -30,10 +30,16 @@ for (let i = 1; i <= 100; i++) {
 }
 const template_compiled = nnt.compile(`${template}`);
 const template_loop_compiled = nnt.compile(`${template_loop}`);
-const res = template_compiled(data);
 
 const other_test = Deno.readTextFileSync("bench/template/pagi.nnt");
 const other_template_compiled = nnt.compile(`${other_test}`);
+
+const recursive_each = Deno.readTextFileSync("bench/template/recursive_each.nnt");
+const recursive_each_compiled = nnt.compile(`${recursive_each}`);
+
+
+const res = template_compiled(data);
+
 const res_2 = other_template_compiled([
     {
         "type": "page",
@@ -62,7 +68,28 @@ const res3 = template_loop_compiled({
     },
 });
 
+let data_recu:any = [];
+for (let i = 1; i <= 100; i++) {
+	data_recu.push({
+		title: "Test Title &" + i,
+		slug: "test-title>" + i,
+		id: i,
+		type: "TV",
+        genre : [
+            "genre 1",
+            "genre 2",
+            "genre 3",
+        ],
+		startdate: new Date(new Date().getTime() - Math.floor(Math.random() * 10000000000)).toISOString().slice(0, 10),
+        // random asing 1 , 2 or 3
+		visible: Math.floor(Math.random() * 3) + 1,
+	});
+}
+
+const res4 = recursive_each_compiled(data_recu)
+
 Deno.writeTextFileSync("output/test_out.html", res);
 Deno.writeTextFileSync("output/test_out_2.html", res_2);
 Deno.writeTextFileSync("output/test_out_3.html", res3);
+Deno.writeTextFileSync("output/test_out_4.html", res4);
 
