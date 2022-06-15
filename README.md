@@ -10,7 +10,7 @@
 ## How to use
 ```js
 // example using deno: https://deno.land/
-import { compile } from "https://cdn.jsdelivr.net/gh/Aiko-Suzuki/nnt-template@main/bundle.js";
+import { compile } from "https://cdn.jsdelivr.net/gh/Aiko-Suzuki/uwu-template@main/bundle.js";
 const template = Deno.readTextFileSync("bench/test.nnt");
 const compiled = compile(template);
 
@@ -37,7 +37,7 @@ registerHelper("JSON",(data) => {
 
 ### supported block
 - **if** 🟢
-- **foreach** 🟢
+- **each** 🟢
 - **elseif** 🟢
 
 ### default helper
