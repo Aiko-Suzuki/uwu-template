@@ -66,14 +66,9 @@ function parseString(template: string) {
 	return items;
 }
 
-// type: lastype as block_inside["type"],
-// content: parse(m.groups?.block_content ?? ""),
-// condition:  lastcondition ? new Function("data", `return !!(${lastcondition})`) : undefined,
-// str_condition : lastcondition
-
 function parseIfBlock(template: string) {
 	const blocks: block_inside[] = [];
-	// get first if open using IF_OPEN
+
 	const item_order: {
 		index: number;
 		length: number;
@@ -103,35 +98,35 @@ function parseIfBlock(template: string) {
 
 	const open_if = template.matchAll(new RegExp(BLOCK_PARSING_REGEX, "g"));
 	for (const m of open_if) {
-
-        if (m.groups?.block_start == "if") {
-            if (!first_if) {
-                first_if = m;
-                addItem("if", m);
-            } else {
-                temp_block.push(m);
-            }
-        } else if (m.groups?.block_start == "elseif") {
-            if (temp_block.length == 0) {
-                addItem("elseif", m);
-            }
-        } else if (m.groups?.block_close == "if") {
-            if (temp_block.length == 0) {
-                addItem("ifclose", m);
-            } else {
-                temp_block.pop();
-            }
-        } else if (!m.groups?.block_start && !m.groups?.block_close) {
-            if (temp_block.length == 0) {
-                addItem("else", m);
-            }
-        }
+		if (m.groups?.block_start == "if") {
+			if (!first_if) {
+				first_if = m;
+				addItem("if", m);
+			} else {
+				temp_block.push(m);
+			}
+		} else if (m.groups?.block_start == "elseif") {
+			if (temp_block.length == 0) {
+				addItem("elseif", m);
+			}
+		} else if (m.groups?.block_close == "if") {
+			if (temp_block.length == 0) {
+				addItem("ifclose", m);
+			} else {
+				temp_block.pop();
+			}
+		} else if (!m.groups?.block_start && !m.groups?.block_close) {
+			if (temp_block.length == 0) {
+				addItem("else", m);
+			}
+		}
 	}
 
 	item_order.sort((a, b) => (a.index as number) - (b.index as number));
 
 	if (item_order.length == 2 && item_order[0].type == "if" && item_order[1].type == "ifclose") {
-		const content = template.substring(item_order[0].index + item_order[0].length, item_order[1].index).trim();
+		let content = template.substring(item_order[0].index + item_order[0].length, item_order[1].index);
+		content = content.replace(/^[\r\n]+/g, "").replace(/^\t/g, "");
 		blocks.push({
 			type: "if",
 			condition: new Function("data", `return !!(${item_order[0].condition})`) ?? undefined,
@@ -142,7 +137,7 @@ function parseIfBlock(template: string) {
 	}
 
 	temp_block = [];
-	// match opening if with matching closing if
+
 	for (const item of item_order) {
 		switch (item.type) {
 			case "if":
@@ -183,12 +178,12 @@ function parseIfBlock(template: string) {
 				}
 				break;
 			case "ifclose":
-				// check if if is inside another if block or not
 				// check if last if
 				if (temp_block.length == 1) {
 					const lastitem = temp_block.pop();
 					if (lastitem) {
-						const content = lastitem.type == "if" ? template.substring(lastitem.index + lastitem.length, item.index + item.length) : template.substring(lastitem.index + lastitem.length, item.index).trim();
+						let content = lastitem.type == "if" ? template.substring(lastitem.index + lastitem.length, item.index + item.length) : template.substring(lastitem.index + lastitem.length, item.index);
+						content = content.replace(/^[\r\n]+/g, "").replace(/^\t/g, "");
 						blocks.push({
 							type: lastitem.type as block_inside["type"],
 							condition: lastitem.condition ? new Function("data", `return !!(${lastitem.condition})`) : undefined,
@@ -206,13 +201,13 @@ function parseIfBlock(template: string) {
 	return blocks;
 }
 
-// parse the template
+
 function parse(template: string) {
 	const blocks: block[] = [];
 	const items: item[] = [];
 
 	let template_left = template;
-	// parse block with the BLOCK_PARSING_REGEX
+
 	const regex = new RegExp(BLOCK_PARSING_REGEX, "gms");
 	const match = template.matchAll(regex);
 	let first_block;
@@ -246,6 +241,7 @@ function parse(template: string) {
 	if (first_block && closing_block) {
 		switch (first_block.groups?.block_start) {
 			case "if": {
+				// get content
 				const content = template.substring(first_block?.index as number, (closing_block?.index as number) + closing_block.length + first_block?.length);
 				blocks.push({
 					block_start: first_block.groups?.block_start,
@@ -257,6 +253,7 @@ function parse(template: string) {
 				break;
 			}
 			case "each": {
+				// get the content
 				const content = template.substring((first_block?.index as number) + first_block[0].length, closing_block.index);
 				blocks.push({
 					block_start: first_block.groups?.block_start,
@@ -272,25 +269,26 @@ function parse(template: string) {
 
 	for (let index = 0; index < blocks.length; index++) {
 		const block = blocks[index];
-		const before = template_left.substring(0, block.index);
 		// parse the before string
+		let before = template_left.substring(0, block.index);
 		items.push({
 			title: "before_var",
 			content: parseString(before),
 			type: "list",
 		});
-		// check if its a foreach block
+		// parse the block
 		items.push({
 			title: "block",
 			content: block,
 			type: block.block_start == "each" ? "each" : "block",
 		});
-		// check if its last block
+
 		template_left = template_left.substring(block.index_end - 1);
+		// check if its last block
 		if (regex.test(template_left)) {
 			items.push({
 				title: "block",
-				content: parse(template_left),
+				content: parse(template_left.trim()),
 				type: "item",
 			});
 			continue;
@@ -299,7 +297,7 @@ function parse(template: string) {
 			// check if string contains only whitespace
 			items.push({
 				title: "after_var",
-				content: parseString(template_left),
+				content: parseString(template_left.trim()),
 				type: "list",
 			});
 		}
