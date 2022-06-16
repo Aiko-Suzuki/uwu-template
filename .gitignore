@@ -2,6 +2,6 @@ test_out.html
 tree.json
 template.json
 blocks.json
-output/test_out_4.html
-output/test_out_3.html
-output/test_out_2.html
+test_out_4.html
+test_out_3.html
+test_out_2.html
