@@ -39,30 +39,29 @@ class renderObject {
 	public compiled: any;
 	private data: any;
 	private render_cache: Record<string, any> = {};
+	private context_cache: Record<string, any> = {};
 
 	constructor(public template: string | item, options = COMPILE_OPTIONS) {
 		this.options = options;
 		this.compiled = typeof template == "string" ? parse(template) : template;
 	}
-	private stringCache(item:any) {
+	private stringCache = (item:any) => {
         const name = item.var as string;
 
 		return this.render_cache[name] = helpers[item.helper]
 			? () => helpers[item.helper](item?.fn.apply(this.data))
             : () => {
                 const val = name == "this" ? this.data : item?.fn.apply(this.data);
-                if (this.options.escape ) {
-                    return typeof val == "string" ? escape(val) : val;
-                }
-                return val;
+				
+                return this.options.escape && typeof val == "string" ?  escape(val) : val;
             };
 	}
 
-	private renderString(item: item) {
+	private renderString = (item: item) => {
 		return this.render_cache[item.var as string]?.() ?? this.stringCache(item)();
 	}
 
-	private renderBlock(block: block) {
+	private renderBlock = (block: block) => {
 		// generate unique key for condition
 		switch (block.block_start) {
 			case "if": {
@@ -85,21 +84,34 @@ class renderObject {
 		}
 	}
 
-	private renderForeach(block: block) {
+	private renderForeach = (block: block) => {
 		let result = "";
 		const old_data = this.data;
+		const old_context_cache = this.context_cache;
 
 		const value = block.block_value == "this" ? this.data : block?.fn.apply(this.data);
-
-		for (let vindex = 0; vindex < value.length; vindex++) {
-			this.data = value[vindex];
-			result += this.render(block.block_content);
+		// loop trough array or object
+		if (Array.isArray(value)) {
+			for (let index = 0; index < value.length; index++) {
+				this.data = value[index];
+				this.context_cache = {};
+				result += this.render(block.block_content);
+			}
+		} else if (typeof value == "object") {
+			for (const key in value) {
+				this.data = value[key];
+				this.context_cache = {};
+				result += this.render(block.block_content);
+			}
 		}
+		
+
 		this.data = old_data;
+		this.context_cache = old_context_cache;
 		return result;
 	}
 
-	private render(tree: item) {
+	private render = (tree: item) => {
 		let html = "";
 		switch (tree.type) {
 			case "block":
@@ -136,7 +148,7 @@ class renderObject {
 		return html;
 	}
 
-	public start(data: any) {
+	public start = (data: any) => {
 		this.data = data;
 		return this.render(this.compiled);
 	}
@@ -144,7 +156,7 @@ class renderObject {
 
 function compile(template: string, options = COMPILE_OPTIONS) {
 	const compiled = new renderObject(template, options);
-	return compiled.start.bind(compiled);
+	return compiled.start;
 }
 
 const compiled_list = new Map<string, any>();

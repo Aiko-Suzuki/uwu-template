@@ -37,8 +37,10 @@ const other_template_compiled = nnt.compile(`${other_test}`);
 const recursive_each = Deno.readTextFileSync("bench/template/recursive_each.nnt");
 const recursive_each_compiled = nnt.compile(`${recursive_each}`);
 
-
+const time_start = performance.now();
 const res = template_compiled(data);
+const time_end = performance.now();
+console.log(`${res.length} characters in ${time_end - time_start}ms`);
 
 const res_2 = other_template_compiled([
     {
