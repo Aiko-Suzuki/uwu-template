@@ -5,7 +5,7 @@
 - [handlebars](https://handlebarsjs.com/)
 - [Pug](https://github.com/pugjs/pug)
 
-![benchmark](https://user-images.githubusercontent.com/42787030/170531462-b63abcab-c03b-4743-bbb1-979520038ef0.png)
+![benchmark](https://user-images.githubusercontent.com/42787030/174460986-105becd7-8414-4b72-800f-6f4d5852059a.png)
 
 ## How to use
 ```js
