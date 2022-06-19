@@ -201,7 +201,6 @@ function parseIfBlock(template: string) {
 	return blocks;
 }
 
-
 function parse(template: string) {
 	const blocks: block[] = [];
 	const items: item[] = [];

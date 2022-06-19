@@ -19,15 +19,15 @@ const entity: { [char: string]: string } = {
 };
 
 function escape(text: string): string {
-    let result = "";
-    let text_left = text;
-    let m;
-    while ((m = ESCAPE_REGEX.exec(text_left))) {
-        result += text_left.slice(0, m.index);
-        result += entity[m[0]];
-        text_left = text_left.slice(m.index + 1);
-    }
-    return result + text_left;
+	let result = "";
+	let text_left = text;
+	let m;
+	while ((m = ESCAPE_REGEX.exec(text_left))) {
+		result += text_left.slice(0, m.index);
+		result += entity[m[0]];
+		text_left = text_left.slice(m.index + 1);
+	}
+	return result + text_left;
 }
 
 const COMPILE_OPTIONS = {
@@ -45,21 +45,21 @@ class renderObject {
 		this.options = options;
 		this.compiled = typeof template == "string" ? parse(template) : template;
 	}
-	private stringCache = (item:any) => {
-        const name = item.var as string;
+	private stringCache = (item: any) => {
+		const name = item.var as string;
 
-		return this.render_cache[name] = helpers[item.helper]
+		return (this.render_cache[name] = helpers[item.helper]
 			? () => helpers[item.helper](item?.fn.apply(this.data))
-            : () => {
-                const val = name == "this" ? this.data : item?.fn.apply(this.data);
-				
-                return this.options.escape && typeof val == "string" ?  escape(val) : val;
-            };
-	}
+			: () => {
+					const val = name == "this" ? this.data : item?.fn.apply(this.data);
+
+					return this.options.escape && typeof val == "string" ? escape(val) : val;
+			  });
+	};
 
 	private renderString = (item: item) => {
 		return this.render_cache[item.var as string]?.() ?? this.stringCache(item)();
-	}
+	};
 
 	private renderBlock = (block: block) => {
 		// generate unique key for condition
@@ -77,12 +77,12 @@ class renderObject {
 							break;
 					}
 				}
-                return "";
+				return "";
 			}
 			default:
 				throw new Error("Unknown block type: " + block.block_start);
 		}
-	}
+	};
 
 	private renderForeach = (block: block) => {
 		let result = "";
@@ -104,12 +104,11 @@ class renderObject {
 				result += this.render(block.block_content);
 			}
 		}
-		
 
 		this.data = old_data;
 		this.context_cache = old_context_cache;
 		return result;
-	}
+	};
 
 	private render = (tree: item) => {
 		let html = "";
@@ -136,9 +135,9 @@ class renderObject {
 					html += this.render(item);
 				}
 				break;
-            case "item":
-                html += this.render(tree.content);
-                break;
+			case "item":
+				html += this.render(tree.content);
+				break;
 
 			default:
 				html += tree.content;
@@ -146,12 +145,12 @@ class renderObject {
 		}
 
 		return html;
-	}
+	};
 
 	public start = (data: any) => {
 		this.data = data;
 		return this.render(this.compiled);
-	}
+	};
 }
 
 function compile(template: string, options = COMPILE_OPTIONS) {

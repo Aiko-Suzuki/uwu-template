@@ -2,20 +2,20 @@
 interface block {
 	block_start: string;
 	block_value: string;
-    block_value_2?: string;
-    fn ?:any;
+	block_value_2?: string;
+	fn?: any;
 	block_content: any;
 	block_content_2?: any;
-    block_content_3?: any;
+	block_content_3?: any;
 	index: number;
 	index_end: number;
 }
 
 interface block_inside {
-    type: "if" | "else" | "elseif";
-    content: any;
-    condition?: any;
-    str_condition?: string;
+	type: "if" | "else" | "elseif";
+	content: any;
+	condition?: any;
+	str_condition?: string;
 }
 
 interface item {
@@ -23,8 +23,8 @@ interface item {
 	childs?: item[];
 	content?: any;
 	var?: string;
-	type: "block" | "item" | "string" | "each" | "var" | "list"| "items";
+	type: "block" | "item" | "string" | "each" | "var" | "list" | "items";
 	index?: number;
 	index_end?: number;
 }
-export type { item, block,block_inside };
+export type { item, block, block_inside };
