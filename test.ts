@@ -73,7 +73,7 @@ const res3 = template_loop_compiled({
 let data_recu:any = [];
 for (let i = 1; i <= 100; i++) {
 	data_recu.push({
-		title: "Test Title &" + i,
+		title: "Test Title > &" + i,
 		slug: "test-title>" + i,
 		id: i,
 		type: "TV",

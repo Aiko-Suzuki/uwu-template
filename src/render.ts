@@ -39,7 +39,6 @@ class renderObject {
 	public compiled: any;
 	private data: any;
 	private render_cache: Record<string, any> = {};
-	private context_cache: Record<string, any> = {};
 
 	constructor(public template: string | item, options = COMPILE_OPTIONS) {
 		this.options = options;
@@ -87,26 +86,16 @@ class renderObject {
 	private renderForeach = (block: block) => {
 		let result = "";
 		const old_data = this.data;
-		const old_context_cache = this.context_cache;
 
 		const value = block.block_value == "this" ? this.data : block?.fn.apply(this.data);
-		// loop trough array or object
-		if (Array.isArray(value)) {
-			for (let index = 0; index < value.length; index++) {
-				this.data = value[index];
-				this.context_cache = {};
-				result += this.render(block.block_content);
-			}
-		} else if (typeof value == "object") {
-			for (const key in value) {
-				this.data = value[key];
-				this.context_cache = {};
-				result += this.render(block.block_content);
-			}
+		if (!Array.isArray(value)) throw new Error("each value is not an array");
+
+		for (let index = 0; index < value.length; index++) {
+			this.data = value[index];
+			result += this.render(block.block_content);
 		}
 
 		this.data = old_data;
-		this.context_cache = old_context_cache;
 		return result;
 	};
 
@@ -138,7 +127,6 @@ class renderObject {
 			case "item":
 				html += this.render(tree.content);
 				break;
-
 			default:
 				html += tree.content;
 				break;
