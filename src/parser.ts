@@ -126,7 +126,6 @@ function parseIfBlock(template: string) {
 
 	if (item_order.length == 2 && item_order[0].type == "if" && item_order[1].type == "ifclose") {
 		let content = template.substring(item_order[0].index + item_order[0].length, item_order[1].index);
-		content = content.replace(/^[\r\n]+/g, "").replace(/^\t/g, "");
 		blocks.push({
 			type: "if",
 			condition: new Function("data", `return !!(${item_order[0].condition})`) ?? undefined,
@@ -183,7 +182,6 @@ function parseIfBlock(template: string) {
 					const lastitem = temp_block.pop();
 					if (lastitem) {
 						let content = lastitem.type == "if" ? template.substring(lastitem.index + lastitem.length, item.index + item.length) : template.substring(lastitem.index + lastitem.length, item.index);
-						content = content.replace(/^[\r\n]+/g, "").replace(/^\t/g, "");
 						blocks.push({
 							type: lastitem.type as block_inside["type"],
 							condition: lastitem.condition ? new Function("data", `return !!(${lastitem.condition})`) : undefined,
