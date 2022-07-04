@@ -1,4 +1,5 @@
 # Weird template engine 👉👈
+use at your own risk am making this for fun
 ## Performance benchmark 🔥
 
 - [renderTemplate](https://github.com/Aiko-Suzuki/nnt-template/blob/main/src/render.ts#L110)
