@@ -91,7 +91,7 @@ class renderObject {
 		if (!Array.isArray(value)) throw new Error("each value is not an array");
 
 		for (let index = 0; index < value.length; index++) {
-			this.data = value[index];
+			this.data = {...old_data,...value[index]};
 			result += this.render(block.block_content);
 		}
 
