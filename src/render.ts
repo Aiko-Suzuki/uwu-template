@@ -89,9 +89,12 @@ class renderObject {
 
 		const value = block.block_value == "this" ? this.data : block?.fn.apply(this.data);
 		if (!Array.isArray(value)) throw new Error("each value is not an array");
+		const key = Object.keys(old_data).find(key => old_data[key] === value) as string;
+		const dd = {...old_data}
+		delete dd[key];
 
 		for (let index = 0; index < value.length; index++) {
-			this.data = {...old_data,...value[index]};
+			this.data = {...dd,...value[index]};
 			result += this.render(block.block_content);
 		}
 
