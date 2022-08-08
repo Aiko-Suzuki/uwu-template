@@ -50,12 +50,11 @@ class renderObject {
 		let data;
 		if (typeof fn == "function") {
 			try {
-				data = fn.apply(this.current_data) ?? fn.apply(this.data);
-			} catch (_) {
+				data = fn.apply(this.current_data ?? this.data);
+			} catch (e) {
 				data = fn.apply(this.data);
 			}
 		}
-		console.log(data);
 
 		return data;
 	}
