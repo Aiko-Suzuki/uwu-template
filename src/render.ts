@@ -55,6 +55,7 @@ class renderObject {
 				data = fn.apply(this.data);
 			}
 		}
+		console.log(data);
 
 		return data;
 	}
