@@ -61,6 +61,8 @@ const res_2 = other_template_compiled([
 ]);
 
 const res3 = template_loop_compiled({
+	"user" : 'teest user',
+
     "items": {
         list : [
             "item 1",

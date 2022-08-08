@@ -1,5 +1,5 @@
 {{#if this.items.list}}
 	{{#each items.list}}
-		{{this}}
+		{{this}} - {{user}}
 	{{/each}}
 {{/if}}

@@ -38,19 +38,34 @@ class renderObject {
 	public options = COMPILE_OPTIONS;
 	public compiled: any;
 	private data: any;
+	private current_data: any;
 	private render_cache: Record<string, any> = {};
 
 	constructor(public template: string | item, options = COMPILE_OPTIONS) {
 		this.options = options;
 		this.compiled = typeof template == "string" ? parse(template) : template;
 	}
+
+	private getData(fn: any) {
+		let data;
+		if (typeof fn == "function") {
+			try {
+				data = fn.apply(this.current_data) ?? fn.apply(this.data);
+			} catch (_) {
+				data = fn.apply(this.data);
+			}
+		}
+
+		return data;
+	}
+
 	private stringCache = (item: any) => {
 		const name = item.var as string;
 
 		return (this.render_cache[name] = helpers[item.helper]
-			? () => helpers[item.helper](item?.fn.apply(this.data))
+			? () => helpers[item.helper](this.getData(item?.fn))
 			: () => {
-					const val = name == "this" ? this.data : item?.fn.apply(this.data);
+					const val = name == "this" ? this.data : this.getData(item?.fn);
 
 					return this.options.escape && typeof val == "string" ? escape(val) : val;
 			  });
@@ -70,7 +85,7 @@ class renderObject {
 						case undefined:
 							return this.render(item.content);
 						default:
-							if (item.condition.apply(this.data)) {
+							if (this.getData(item.condition)) {
 								return this.render(item.content);
 							}
 							break;
@@ -85,20 +100,18 @@ class renderObject {
 
 	private renderForeach = (block: block) => {
 		let result = "";
-		const old_data = this.data;
+		const old_data = this.current_data;
 
-		const value = block.block_value == "this" ? this.data : block?.fn.apply(this.data);
+		const value = block.block_value == "this" ? this.data : this.getData(block?.fn);
 		if (!Array.isArray(value)) throw new Error("each value is not an array");
-		const key = Object.keys(old_data).find(key => old_data[key] === value) as string;
-		const dd = {...old_data}
-		delete dd[key];
 
 		for (let index = 0; index < value.length; index++) {
-			this.data = {...dd,...value[index]};
+			//this.data = value[index];
+			this.current_data = value[index];
 			result += this.render(block.block_content);
 		}
 
-		this.data = old_data;
+		this.current_data = old_data;
 		return result;
 	};
 
