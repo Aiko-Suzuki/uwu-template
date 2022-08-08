@@ -65,7 +65,7 @@ class renderObject {
 		return (this.render_cache[name] = helpers[item.helper]
 			? () => helpers[item.helper](this.getData(item?.fn))
 			: () => {
-					const val = name == "this" ? this.data : this.getData(item?.fn);
+					const val = name == "this" ? this.current_data ?? this.data : this.getData(item?.fn);
 
 					return this.options.escape && typeof val == "string" ? escape(val) : val;
 			  });
