@@ -5,6 +5,8 @@ const ITEM_PARSING_REGEX = /\{{(.*?)}}/g;
 
 const BLOCK_PARSING_REGEX = /{{\/(?<block_close>.*?)}}|{{#else}}|{{#(?<block_start>.*?) (?<block_value>.*?)}}/gms;
 
+const COMMENT_PARSING_REGEX = /{{!--(.*)--}}/gms;
+
 function parseString(template: string) {
 	// use ITEM_PARSING_REGEX to find all {!xxx}
 	const items: item[] = [];
@@ -19,7 +21,7 @@ function parseString(template: string) {
 		const split = m[1].split(" "),
 			action = split[0],
 			key = split[1];
-
+		
 		const item = {
 			type: "var",
 			content: m[0],
@@ -30,6 +32,12 @@ function parseString(template: string) {
 			index: start,
 			index_end: true_index + end,
 		};
+		
+		if (item.content.startsWith("{{!--") && item.content.endsWith("--}}")) {
+			template_left = template_left.replace(item.content,"");
+			continue;
+		}
+
 		const before = template_left.substring(0, item.index);
 		if (regex.test(before)) {
 			items.push({
