@@ -21,7 +21,12 @@ function parseString(template: string) {
 		const split = m[1].split(" "),
 			action = split[0],
 			key = split[1];
-		
+
+		if (m[0].startsWith("{{!--") && m[0].endsWith("--}}")) {
+			template_left = template_left.replace(m[0], "");
+			continue;
+		}
+
 		const item = {
 			type: "var",
 			content: m[0],
@@ -32,11 +37,6 @@ function parseString(template: string) {
 			index: start,
 			index_end: true_index + end,
 		};
-		
-		if (item.content.startsWith("{{!--") && item.content.endsWith("--}}")) {
-			template_left = template_left.replace(item.content,"");
-			continue;
-		}
 
 		const before = template_left.substring(0, item.index);
 		if (regex.test(before)) {
