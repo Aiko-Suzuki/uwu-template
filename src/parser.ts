@@ -5,7 +5,6 @@ const ITEM_PARSING_REGEX = /\{{(.*?)}}/g;
 
 const BLOCK_PARSING_REGEX = /{{\/(?<block_close>.*?)}}|{{#else}}|{{#(?<block_start>.*?) (?<block_value>.*?)}}/gms;
 
-const COMMENT_PARSING_REGEX = /{{!--(.*)--}}/gms;
 
 function parseString(template: string) {
 	// use ITEM_PARSING_REGEX to find all {!xxx}
