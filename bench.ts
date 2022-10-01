@@ -1,4 +1,6 @@
-{{#each this}}
+import {compile } from "./mod.ts"
+
+const template_string = `{{#each this}}
 <tr id="list_item">
 	<td>
 		<div class="main__user">
@@ -22,8 +24,7 @@
 	</td>
 	<td id="visible-{{id}}">
 		{{#if this.visible == 1}}
-			nested if test : {{#if this.visible == true}}{{id}}{{/if}} 
-			- asd  {{#if this.visible == true}}{{type}}{{/if}}
+			nested if test : {{#if this.visible == true}}{{id}}{{/if}} - {{#if this.visible == true}}{{type}}{{/if}}
 			more nested test : {{#if this.visible == true}}{{type}}{{#if this.visible == true}} - {{id}}{{/if}}{{/if}}
 		{{#elseif this.visible == 2}}
 			<div class="main__table-text main__table-text--green">secret</div>
@@ -48,4 +49,29 @@
 		</div>
 	</td>
 </tr>
-{{/each}}
+{{/each}}`
+
+const template = compile(template_string,{escape: false})
+
+const data = [];
+
+// randomly fill the data array with item
+for (let i = 1; i <= 100; i++) {
+	data.push({
+		title: "Test Title &" + i,
+		slug: "test-title>" + i,
+		id: i,
+		type: "TV",
+		startdate: new Date(new Date().getTime() - Math.floor(Math.random() * 10000000000)).toISOString().slice(0, 10),
+        // random asing 1 , 2 or 3
+		visible: Math.floor(Math.random() * 3) + 1,
+	});
+}
+
+const beg = performance.now()
+const pef = []
+for (let i = 0; i < 100; i++) {
+	template(data)
+}
+
+console.log("time : " + (performance.now() - beg)  + 'ms')

@@ -10,7 +10,6 @@
 	{{#else}}
 		<li class="paginator__item{{#if this.active}} paginator__item--active{{/if}}">
 			<a href="?page={{page}}">{{page}}</a>
-			{{!-- asdasd --}}
 		</li>
 	{{/if}}
 {{/each}}
