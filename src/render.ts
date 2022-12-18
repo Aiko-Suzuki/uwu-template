@@ -11,11 +11,12 @@ function registerHelper(name: string, fn: any) {
 }
 
 const entity: { [char: string]: string } = {
-	"<": "&lt;",
-	">": "&gt;",
 	"&": "&amp;",
-	"'": "&#39;",
-	'"': "&#34;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#x27;",
+    "`": "&#x60;"
 };
 
 function escape(text: string): string {
@@ -50,9 +51,9 @@ class renderObject {
 		let data;
 		if (typeof fn == "function") {
 			try {
-				data = fn.apply(this.current_data ?? this.data);
-			} catch (e) {
-				data = fn.apply(this.data);
+				return fn.apply(this.current_data ?? this.data);
+			} catch (_e) {
+				return fn.apply(this.data);
 			}
 		}
 
@@ -106,7 +107,6 @@ class renderObject {
 		if (!Array.isArray(value)) throw new Error("each value is not an array");
 
 		for (let index = 0; index < value.length; index++) {
-			//this.data = value[index];
 			this.current_data = value[index];
 			result += this.render(block.block_content);
 		}

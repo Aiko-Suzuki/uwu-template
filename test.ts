@@ -17,7 +17,7 @@ nnt.registerHelper("formatdate",formatdate);
 const data = [];
 
 // randomly fill the data array with item
-for (let i = 1; i <= 100; i++) {
+for (let i = 1; i <= 100000; i++) {
 	data.push({
 		title: "Test Title &" + i,
 		slug: "test-title>" + i,
@@ -72,7 +72,7 @@ const res3 = template_loop_compiled({
     },
 });
 
-let data_recu:any = [];
+const data_recu = [];
 for (let i = 1; i <= 100; i++) {
 	data_recu.push({
 		title: "Test Title > &" + i,

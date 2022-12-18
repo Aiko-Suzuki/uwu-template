@@ -51,12 +51,12 @@ const template_string = `{{#each this}}
 </tr>
 {{/each}}`
 
-const template = compile(template_string,{escape: false})
+const template = compile(template_string,{escape: true})
 
 const data = [];
 
 // randomly fill the data array with item
-for (let i = 1; i <= 100; i++) {
+for (let i = 1; i <= 10000; i++) {
 	data.push({
 		title: "Test Title &" + i,
 		slug: "test-title>" + i,
@@ -68,10 +68,11 @@ for (let i = 1; i <= 100; i++) {
 	});
 }
 
-const beg = performance.now()
 const pef = []
-for (let i = 0; i < 100; i++) {
+for (let i = 0; i < 1000; i++) {
+	const start = performance.now()
 	template(data)
+	pef.push(performance.now() - start)
 }
 
-console.log("time : " + (performance.now() - beg)  + 'ms')
+console.log((pef.reduce((a, b) => a + b, 0) / pef.length).toFixed(6) + "ms")
