@@ -24,8 +24,7 @@ function escape(text: string): string {
 	let text_left = text;
 	let m;
 	while ((m = ESCAPE_REGEX.exec(text_left))) {
-		result += text_left.slice(0, m.index);
-		result += entity[m[0]];
+		result += text_left.slice(0, m.index) + entity[m[0]];
 		text_left = text_left.slice(m.index + 1);
 	}
 	return result + text_left;
