@@ -112,7 +112,6 @@ class renderObject {
 			} else {
 				this.current_data = Object.assign({},old_data,typeof value[key] != "object" ? { [block.block_value] : value[key] } : value[key]);
 			}
-			console.log(this.current_data);
 			result += this.render(block.block_content);
 		}
 
