@@ -135,7 +135,7 @@ function parseIfBlock(template: string) {
 		let content = template.substring(item_order[0].index + item_order[0].length, item_order[1].index);
 		blocks.push({
 			type: "if",
-			condition: new Function("data", `return !!${item_order[0].condition}`) ?? undefined,
+			condition: new Function("data", `return !!(${item_order[0].condition})`) ?? undefined,
 			content: parse(content),
 			str_condition: item_order[0].condition,
 		});
