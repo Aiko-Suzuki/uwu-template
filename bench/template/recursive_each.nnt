@@ -16,6 +16,7 @@
 			<div class="main__table-text main__table-text--rate">7.9</div>
 		</td>
 		<td>
+			{{genre}}
 			<div class="main__table-text">{{#each genre}}{{this}}{{/each}}</div>
 		</td>
 		<td>
