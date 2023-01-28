@@ -50,8 +50,7 @@ class renderObject {
 		let data;
 		if (typeof fn == "function") {
 			try {
-				const fn_data = fn.apply(this.current_data);
-				return fn_data == undefined ? fn.apply(this.data) : fn_data;
+				return fn.apply(this.current_data ?? this.data);
 			} catch (_e) {
 				return fn.apply(this.data);
 			}
