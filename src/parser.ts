@@ -159,7 +159,7 @@ function parseIfBlock(template: string) {
 						const content = template.substring(lastitem.index + lastitem.length, item.index).trim();
 						blocks.push({
 							type: lastitem.type as block_inside["type"],
-							condition: new Function("data", `return !!(${lastitem.condition})`) ?? undefined,
+							condition: new Function("data", `return !!${lastitem.condition}`) ?? undefined,
 							content: parse(content),
 							str_condition: lastitem.condition,
 						});
@@ -175,7 +175,7 @@ function parseIfBlock(template: string) {
 						const content = template.substring(lastitem.index + lastitem.length, item.index).trim();
 						blocks.push({
 							type: lastitem.type as block_inside["type"],
-							condition: lastitem.condition ? new Function("data", `return !!(${lastitem.condition})`) : undefined,
+							condition: lastitem.condition ? new Function("data", `return !!${lastitem.condition}`) : undefined,
 							content: parse(content),
 							str_condition: lastitem.condition,
 						});
@@ -191,7 +191,7 @@ function parseIfBlock(template: string) {
 						let content = lastitem.type == "if" ? template.substring(lastitem.index + lastitem.length, item.index + item.length) : template.substring(lastitem.index + lastitem.length, item.index);
 						blocks.push({
 							type: lastitem.type as block_inside["type"],
-							condition: lastitem.condition ? new Function("data", `return !!(${lastitem.condition})`) : undefined,
+							condition: lastitem.condition ? new Function("data", `return !!${lastitem.condition}`) : undefined,
 							content: parse(content),
 							str_condition: lastitem.condition,
 						});
