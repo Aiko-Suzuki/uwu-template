@@ -109,7 +109,7 @@ class renderObject {
 			if (isThis) {
 				this.current_data = value[key]
 			} else {
-				this.current_data = Object.assign({},old_data,typeof value[key] != "object" ? { [block.block_value] : value[key] } : value[key]);
+				this.current_data = Object.assign({},old_data,typeof value[key] != "object" ? { [block.block_value.split(".").pop() as string] : value[key] } : value[key]);
 			}
 			result += this.render(block.block_content);
 		}
