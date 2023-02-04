@@ -17,15 +17,15 @@
 		</td>
 		<td>
 			{{genre}}
-			<div class="main__table-text">{{#each genre}}{{genre}}{{/each}}</div>
+			<div class="main__table-text">{{#each genre}} {{#each history}} {{genre}} {{/each}} {{/each}}</div>
 		</td>
 		<td>
 			<div class="main__table-text">1392</div>
 		</td>
 		<td id="visible-{{id}}">
-			{{#if this.visible}}
-				nested if test : {{#if this.visible}}first{{/if}} - {{#if this.visible}}second{{/if}}
-				more nested test : {{#if this.visible}}first{{#if this.visible}} - second{{/if}}{{/if}}
+			{{#if visible}}
+				nested if test : {{#if visible}}first{{/if}} - {{#if visible}}second{{/if}}
+				more nested test : {{#if visible}}first{{#if visible}} - second{{/if}}{{/if}}
 			{{#else}}
 				<div class="main__table-text main__table-text--red">Hidden</div>
 			{{/if}}

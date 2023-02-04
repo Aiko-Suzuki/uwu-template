@@ -21,13 +21,13 @@
 		<div class="main__table-text">1392</div>
 	</td>
 	<td id="visible-{{this.id}}">
-		{{#if this.visible}}
+		{{#if visible}}
 		nested if test :
-		{{#if this.visible}}first{{/if}}
+		{{#if visible}}first{{/if}}
 		-
-		{{#if this.visible}}second{{/if}}
+		{{#if visible}}second{{/if}}
 		more nested test :
-		{{#if this.visible}}first{{#if this.visible}} - second{{/if}}{{/if}}
+		{{#if visible}}first{{#if visible}} - second{{/if}}{{/if}}
 		{{else}}
 		<div class="main__table-text main__table-text--red">Hidden</div>
 		{{/if}}

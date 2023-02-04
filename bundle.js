@@ -342,10 +342,17 @@ class renderObject {
         this.renderForeach = (block)=>{
             let result = "";
             const old_data = this.current_data;
-            const value = block.block_value == "this" ? this.data : this.getData(block?.fn);
+            const isThis = block.block_value == "this";
+            const value = isThis ? this.data : this.getData(block?.fn);
             if (!Array.isArray(value)) throw new Error("each value is not an array");
-            for(let index = 0; index < value.length; index++){
-                this.current_data = value[index];
+            for(const key in value){
+                if (isThis) {
+                    this.current_data = value[key];
+                } else {
+                    this.current_data = Object.assign({}, old_data, typeof value[key] != "object" ? {
+                        [block.block_value.split(".").pop()]: value[key]
+                    } : value[key]);
+                }
                 result += this.render(block.block_content);
             }
             this.current_data = old_data;

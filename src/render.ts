@@ -81,13 +81,20 @@ class renderObject {
 			case "if": {
 				for (let index = 0; index < block.block_content.length; index++) {
 					const item = block.block_content[index];
+
 					switch (item.condition) {
 						case undefined:
 							return this.render(item.content);
 						default:
-							if (this.getData(item.condition)) {
-								return this.render(item.content);
+							try {
+								const data = item.values.map((v: any) => this.getData(v.fn));
+								if (item.condition.apply(this,data)) {
+									return this.render(item.content);
+								}
+							} catch (error) {
+								console.error("Error in condition: " + item.str_condition);
 							}
+
 							break;
 					}
 				}

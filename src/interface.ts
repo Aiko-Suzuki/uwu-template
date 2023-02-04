@@ -16,6 +16,8 @@ interface block_inside {
 	content: any;
 	condition?: any;
 	str_condition?: string;
+
+	values?: any;
 }
 
 interface item {

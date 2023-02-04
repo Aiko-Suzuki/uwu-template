@@ -21,11 +21,11 @@
 		<div class="main__table-text">1392</div>
 	</td>
 	<td id="visible-{{id}}">
-		{{#if this.visible == 1}}
-		nested if test : {{#if this.visible == true}}{{id}}{{/if}}
-		- asd {{#if this.visible == true}}{{type}}{{/if}}
-		more nested test : {{#if this.visible == true}}{{type}}{{#if this.visible == true}} - {{id}}{{/if}}{{/if}}
-		{{#elseif this.visible == 2}}
+		{{#if visible == 1}}
+		nested if test : {{#if visible == true}}{{id}}{{/if}}
+		- asd {{#if visible == true}}{{type}}{{/if}}
+		more nested test : {{#if visible == true}}{{type}}{{#if visible == true}} - {{id}}{{/if}}{{/if}}
+		{{#elseif visible == 2}}
 		<div class="main__table-text main__table-text--green">secret</div>
 		{{#else}}
 		<div class="main__table-text main__table-text--red">Hidden</div>

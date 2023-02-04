@@ -6,6 +6,14 @@ const ITEM_PARSING_REGEX = /\{{(.*?)}}/g;
 const BLOCK_PARSING_REGEX = /{{\/(?<block_close>.*?)}}|{{#else}}|{{#(?<block_start>.*?) (?<block_value>.*?)}}/gms;
 
 
+function parseValues(values: string) {
+	return (values.match(/[a-z_]\w*(?!\w*\s*\()/ig)?.filter((item, index, self) => {
+		// check if item is a operator
+		if (item == "true" || item == "false") return false;
+		return true
+	}) ?? []);
+}
+
 function parseString(template: string) {
 	// use ITEM_PARSING_REGEX to find all {!xxx}
 	const items: item[] = [];
@@ -20,6 +28,7 @@ function parseString(template: string) {
 		const split = m[1].split(" "),
 			action = split[0],
 			key = split[1];
+
 
 		if (m[0].startsWith("{{!--") && m[0].endsWith("--}}")) {
 			template_left = template_left.replace(m[0], "");
@@ -94,11 +103,15 @@ function parseIfBlock(template: string) {
 
 	function addItem(type: string, m: any) {
 		const start = m.index;
+		const test = parseValues(m.groups?.block_value ?? "");
 		const item = {
 			index: start as number,
 			length: m[0].length,
 			type: type,
 			condition: m.groups?.block_value,
+			values : test.map((item) => {
+				return {name:item,fn : new Function("data", "return this." + item)}
+			})
 		};
 		item_order.push(item);
 	}
@@ -133,11 +146,15 @@ function parseIfBlock(template: string) {
 
 	if (item_order.length == 2 && item_order[0].type == "if" && item_order[1].type == "ifclose") {
 		let content = template.substring(item_order[0].index + item_order[0].length, item_order[1].index);
+		const test =  parseValues(item_order[0].condition ?? "");
 		blocks.push({
 			type: "if",
-			condition: new Function("data", `return !!(${item_order[0].condition})`) ?? undefined,
+			condition: new Function(...test,`return ${item_order[0].condition};`) ?? undefined,
 			content: parse(content),
 			str_condition: item_order[0].condition,
+			values : test.map((item) => {
+				return {name:item,fn : new Function("data", "return this." + item)}
+			}),
 		});
 		return blocks;
 	}
@@ -157,11 +174,15 @@ function parseIfBlock(template: string) {
 					const lastitem = temp_block.pop();
 					if (lastitem) {
 						const content = template.substring(lastitem.index + lastitem.length, item.index).trim();
+						const test =  parseValues(lastitem.condition ?? "");
 						blocks.push({
 							type: lastitem.type as block_inside["type"],
-							condition: new Function("data", `return !!(${lastitem.condition})`) ?? undefined,
+							condition: new Function(...test, `return !!(${lastitem.condition})`) ?? undefined,
 							content: parse(content),
 							str_condition: lastitem.condition,
+							values : test.map((item) => {
+								return {name:item,fn : new Function("data", "return this." + item)}
+							}),
 						});
 					}
 				}
@@ -173,11 +194,15 @@ function parseIfBlock(template: string) {
 					const lastitem = temp_block.pop();
 					if (lastitem) {
 						const content = template.substring(lastitem.index + lastitem.length, item.index).trim();
+						const test =  parseValues(lastitem.condition ?? "");
 						blocks.push({
 							type: lastitem.type as block_inside["type"],
-							condition: lastitem.condition ? new Function("data", `return !!(${lastitem.condition})`) : undefined,
+							condition: lastitem.condition ? new Function(...test, `return !!(${lastitem.condition})`) : undefined,
 							content: parse(content),
 							str_condition: lastitem.condition,
+							values : test.map((item) => {
+								return {name:item,fn : new Function("data", "return this." + item)}
+							}),
 						});
 					}
 					temp_block.push(item);
@@ -189,11 +214,15 @@ function parseIfBlock(template: string) {
 					const lastitem = temp_block.pop();
 					if (lastitem) {
 						let content = lastitem.type == "if" ? template.substring(lastitem.index + lastitem.length, item.index + item.length) : template.substring(lastitem.index + lastitem.length, item.index);
+						const test =  parseValues(lastitem.condition ?? "");
 						blocks.push({
 							type: lastitem.type as block_inside["type"],
-							condition: lastitem.condition ? new Function("data", `return !!(${lastitem.condition})`) : undefined,
+							condition: lastitem.condition ? new Function(...test, `return !!(${lastitem.condition})`) : undefined,
 							content: parse(content),
 							str_condition: lastitem.condition,
+							values : test.map((item) => {
+								return {name:item,fn : new Function("data", "return this." + item)}
+							}),
 						});
 					}
 				}
