@@ -12,22 +12,27 @@ function registerHelper(name: string, fn: any) {
 
 const entity: { [char: string]: string } = {
 	"&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#x27;",
-    "`": "&#x60;"
+	"<": "&lt;",
+	">": "&gt;",
+	'"': "&quot;",
+	"'": "&#39;",
+	"`": "&#x60;",
 };
 
-function escape(text: string): string {
+function replaceChar(c: string) {
 	let result = "";
-	let text_left = text;
+	let text_left = c;
 	let m;
 	while ((m = ESCAPE_REGEX.exec(text_left))) {
 		result += text_left.slice(0, m.index) + entity[m[0]];
 		text_left = text_left.slice(m.index + 1);
 	}
-	return result + text_left;
+	return result + text_left
+}
+
+function escape(text: string): string {
+	if (!ESCAPE_REGEX.test(text)) return text;
+	return replaceChar(text);
 }
 
 const COMPILE_OPTIONS = {
@@ -88,7 +93,7 @@ class renderObject {
 						default:
 							try {
 								const data = item.values.map((v: any) => this.getData(v.fn));
-								if (item.condition.apply(this,data)) {
+								if (item.condition.apply(this, data)) {
 									return this.render(item.content);
 								}
 							} catch (error) {
@@ -114,9 +119,9 @@ class renderObject {
 		if (!Array.isArray(value)) throw new Error("each value is not an array");
 		for (const key in value) {
 			if (isThis) {
-				this.current_data = value[key]
+				this.current_data = value[key];
 			} else {
-				this.current_data = Object.assign({},old_data,typeof value[key] != "object" ? { [block.block_value.split(".").pop() as string] : value[key] } : value[key]);
+				this.current_data = Object.assign({}, old_data, typeof value[key] != "object" ? { [block.block_value.split(".").pop() as string]: value[key] } : value[key]);
 			}
 			result += this.render(block.block_content);
 		}
