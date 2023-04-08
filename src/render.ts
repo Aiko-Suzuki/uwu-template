@@ -27,7 +27,7 @@ function replaceChar(c: string) {
 		result += text_left.slice(0, m.index) + entity[m[0]];
 		text_left = text_left.slice(m.index + 1);
 	}
-	return result + text_left
+	return result + text_left;
 }
 
 function escape(text: string): string {
@@ -38,6 +38,8 @@ function escape(text: string): string {
 const COMPILE_OPTIONS = {
 	escape: true,
 };
+
+const layouts = new Map<string, any>();
 
 class renderObject {
 	public options = COMPILE_OPTIONS;
@@ -63,6 +65,12 @@ class renderObject {
 
 		return data;
 	}
+
+	private layouts = (name: string) => {
+		const layout = layouts.get(name);
+		if (!layout) throw new Error("Layout not found: " + name);
+		return layout(this.current_data ?? this.data);
+	};
 
 	private stringCache = (item: any) => {
 		const name = item.var as string;
@@ -133,6 +141,9 @@ class renderObject {
 	private render = (tree: item) => {
 		let html = "";
 		switch (tree.type) {
+			case "layout":
+				html += this.layouts(tree.content);
+				break;
 			case "block":
 				html += this.renderBlock(tree.content);
 				break;
@@ -175,6 +186,10 @@ class renderObject {
 function compile(template: string, options = COMPILE_OPTIONS) {
 	const compiled = new renderObject(template, options);
 	return compiled.start;
+}
+
+export function registerLayout(name: string, content: string) {
+	layouts.set(name, compile(content));
 }
 
 const compiled_list = new Map<string, any>();

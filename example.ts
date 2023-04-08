@@ -1,5 +1,9 @@
-import { compile } from "https://cdn.jsdelivr.net/gh/Aiko-Suzuki/nnt-template@main/bundle.js";
-const template = Deno.readTextFileSync("bench/test.nnt");
+import { compile, registerLayout } from "./mod.ts";
+const template = Deno.readTextFileSync("./layouts.nnt");
+registerLayout(
+	"header",
+	`<h3>{{title}}</h3><span>ID : {{id}}, SLUG : {{slug}}</span>`,
+);
 const compiled = compile(template);
 
 const data = {

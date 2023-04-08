@@ -25,7 +25,7 @@ interface item {
 	childs?: item[];
 	content?: any;
 	var?: string;
-	type: "block" | "item" | "string" | "each" | "var" | "list" | "items";
+	type: "block" | "item" | "string" | "each" | "var" | "list" | "items" | "layout";
 	index?: number;
 	index_end?: number;
 }
