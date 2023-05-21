@@ -70,11 +70,18 @@ function parseString(template: string) {
 			continue;
 		}
 
+		let fn;
+		try {
+			fn = new Function("data", "return this." + (key ? key : m[1]));
+		} catch (error) {
+			throw new Error("Error in string: " + m[0] + "\n" + error?.message ?? "");
+		}
+
 		const item = {
 			type: "var",
 			content: m[0],
 			var: m[1],
-			fn: new Function("data", "return this." + (key ? key : m[1])),
+			fn: fn,
 			helper: key ? action : undefined,
 			key: key,
 			index: start,
@@ -104,8 +111,6 @@ function parseString(template: string) {
 		true_index = end + true_index;
 		template_left = template_left.substring(end) || "";
 	}
-	
-	
 
 	items.sort((a, b) => (a.index as number) - (b.index as number));
 	items.push({
@@ -179,15 +184,20 @@ function parseIfBlock(template: string) {
 		}
 	}
 
-
 	item_order.sort((a, b) => (a.index as number) - (b.index as number));
 
 	if (item_order.length == 2 && item_order[0].type == "if" && item_order[1].type == "ifclose") {
 		let content = template.substring(item_order[0].index + item_order[0].length, item_order[1].index);
 		const test = parseValues(item_order[0].condition ?? "");
+		let fn;
+		try {
+			fn = new Function(...test, `return ${item_order[0].condition};`);
+		} catch (error) {
+			throw new Error("Error in condition: " + item_order[0].condition + "\n" + error?.message ?? "");
+		}
 		blocks.push({
 			type: "if",
-			condition: new Function(...test, `return ${item_order[0].condition};`) ?? undefined,
+			condition: fn ?? undefined,
 			content: parse(content),
 			str_condition: item_order[0].condition,
 			values: test.map((item) => {
@@ -213,9 +223,15 @@ function parseIfBlock(template: string) {
 					if (lastitem) {
 						const content = template.substring(lastitem.index + lastitem.length, item.index).trim();
 						const test = parseValues(lastitem.condition ?? "");
+						let fn;
+						try {
+							fn = new Function(...test, `return !!(${lastitem.condition})`);
+						} catch (error) {
+							throw new Error("Error in condition: " + lastitem.condition + "\n" + error?.message ?? "");
+						}
 						blocks.push({
 							type: lastitem.type as block_inside["type"],
-							condition: new Function(...test, `return !!(${lastitem.condition})`) ?? undefined,
+							condition: fn ?? undefined,
 							content: parse(content),
 							str_condition: lastitem.condition,
 							values: test.map((item) => {
@@ -233,9 +249,15 @@ function parseIfBlock(template: string) {
 					if (lastitem) {
 						const content = template.substring(lastitem.index + lastitem.length, item.index).trim();
 						const test = parseValues(lastitem.condition ?? "");
+						let fn;
+						try {
+							fn = new Function(...test, `return !!(${lastitem.condition})`) ;
+						} catch (error) {
+							throw new Error("Error in condition: " + lastitem.condition + "\n" + error?.message ?? "");
+						}
 						blocks.push({
 							type: lastitem.type as block_inside["type"],
-							condition: lastitem.condition ? new Function(...test, `return !!(${lastitem.condition})`) : undefined,
+							condition: lastitem.condition ? fn : undefined,
 							content: parse(content),
 							str_condition: lastitem.condition,
 							values: test.map((item) => {
