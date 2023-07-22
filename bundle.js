@@ -4,6 +4,12 @@
 
 const ITEM_PARSING_REGEX = /\{{(.*?)}}/g;
 const BLOCK_PARSING_REGEX = /{{\/(?<block_close>.*?)}}|{{#else}}|{{#(?<block_start>.*?) (?<block_value>.*?)}}/gms;
+function parseValues(values) {
+    return values.match(/[a-z_]\w*(?!\w*\s*\()/gi)?.filter((item, index, self)=>{
+        if (item == "true" || item == "false") return false;
+        return true;
+    }) ?? [];
+}
 function parseString(template) {
     const items = [];
     let template_left = template;
@@ -15,15 +21,52 @@ function parseString(template) {
         const start = m.index;
         const end = m.index + m[0].length;
         const split = m[1].split(" "), action = split[0], key = split[1];
+        if (action == ">") {
+            const item = {
+                type: "layout",
+                content: key,
+                index: start,
+                index_end: true_index + end
+            };
+            const before = template_left.substring(0, item.index);
+            if (regex.test(before)) {
+                items.push({
+                    title: "before_block",
+                    content: parseString(before),
+                    type: "list",
+                    index: true_index,
+                    index_end: true_index + before.length
+                });
+            } else {
+                items.push({
+                    title: "before_block",
+                    content: before,
+                    type: "string",
+                    index: true_index,
+                    index_end: true_index + before.length
+                });
+            }
+            item.index = true_index + start;
+            items.push(item);
+            true_index = end + true_index;
+            template_left = template_left.substring(end) || "";
+            continue;
+        }
         if (m[0].startsWith("{{!--") && m[0].endsWith("--}}")) {
             template_left = template_left.replace(m[0], "");
             continue;
+        }
+        let fn;
+        try {
+            fn = new Function("data", "return this." + (key ? key : m[1]));
+        } catch (error) {
+            throw new Error(("Error in string: " + m[0] + "\n" + error?.message) ?? "");
         }
         const item = {
             type: "var",
             content: m[0],
             var: m[1],
-            fn: new Function("data", "return this." + (key ? key : m[1])),
+            fn: fn,
             helper: key ? action : undefined,
             key: key,
             index: start,
@@ -69,11 +112,18 @@ function parseIfBlock(template) {
     let temp_block = [];
     function addItem(type, m) {
         const start = m.index;
+        const test = parseValues(m.groups?.block_value ?? "");
         const item = {
             index: start,
             length: m[0].length,
             type: type,
-            condition: m.groups?.block_value
+            condition: m.groups?.block_value,
+            values: test.map((item)=>{
+                return {
+                    name: item,
+                    fn: new Function("data", "return this." + item)
+                };
+            })
         };
         item_order.push(item);
     }
@@ -105,11 +155,24 @@ function parseIfBlock(template) {
     item_order.sort((a, b)=>a.index - b.index);
     if (item_order.length == 2 && item_order[0].type == "if" && item_order[1].type == "ifclose") {
         let content = template.substring(item_order[0].index + item_order[0].length, item_order[1].index);
+        const test = parseValues(item_order[0].condition ?? "");
+        let fn;
+        try {
+            fn = new Function(...test, `return ${item_order[0].condition};`);
+        } catch (error) {
+            throw new Error(("Error in condition: " + item_order[0].condition + "\n" + error?.message) ?? "");
+        }
         blocks.push({
             type: "if",
-            condition: new Function("data", `return !!(${item_order[0].condition})`) ?? undefined,
+            condition: fn ?? undefined,
             content: parse(content),
-            str_condition: item_order[0].condition
+            str_condition: item_order[0].condition,
+            values: test.map((item)=>{
+                return {
+                    name: item,
+                    fn: new Function("data", "return this." + item)
+                };
+            })
         });
         return blocks;
     }
@@ -125,12 +188,25 @@ function parseIfBlock(template) {
                 if (temp_block.length == 1) {
                     const lastitem = temp_block.pop();
                     if (lastitem) {
-                        const content1 = template.substring(lastitem.index + lastitem.length, item.index).trim();
+                        const content = template.substring(lastitem.index + lastitem.length, item.index).trim();
+                        const test = parseValues(lastitem.condition ?? "");
+                        let fn;
+                        try {
+                            fn = new Function(...test, `return !!(${lastitem.condition})`);
+                        } catch (error) {
+                            throw new Error(("Error in condition: " + lastitem.condition + "\n" + error?.message) ?? "");
+                        }
                         blocks.push({
                             type: lastitem.type,
-                            condition: new Function("data", `return !!(${lastitem.condition})`) ?? undefined,
-                            content: parse(content1),
-                            str_condition: lastitem.condition
+                            condition: fn ?? undefined,
+                            content: parse(content),
+                            str_condition: lastitem.condition,
+                            values: test.map((item)=>{
+                                return {
+                                    name: item,
+                                    fn: new Function("data", "return this." + item)
+                                };
+                            })
                         });
                     }
                 }
@@ -138,14 +214,27 @@ function parseIfBlock(template) {
                 break;
             case "else":
                 if (temp_block.length == 1) {
-                    const lastitem1 = temp_block.pop();
-                    if (lastitem1) {
-                        const content2 = template.substring(lastitem1.index + lastitem1.length, item.index).trim();
+                    const lastitem = temp_block.pop();
+                    if (lastitem) {
+                        const content = template.substring(lastitem.index + lastitem.length, item.index).trim();
+                        const test = parseValues(lastitem.condition ?? "");
+                        let fn;
+                        try {
+                            fn = new Function(...test, `return !!(${lastitem.condition})`);
+                        } catch (error) {
+                            throw new Error(("Error in condition: " + lastitem.condition + "\n" + error?.message) ?? "");
+                        }
                         blocks.push({
-                            type: lastitem1.type,
-                            condition: lastitem1.condition ? new Function("data", `return !!(${lastitem1.condition})`) : undefined,
-                            content: parse(content2),
-                            str_condition: lastitem1.condition
+                            type: lastitem.type,
+                            condition: lastitem.condition ? fn : undefined,
+                            content: parse(content),
+                            str_condition: lastitem.condition,
+                            values: test.map((item)=>{
+                                return {
+                                    name: item,
+                                    fn: new Function("data", "return this." + item)
+                                };
+                            })
                         });
                     }
                     temp_block.push(item);
@@ -153,14 +242,21 @@ function parseIfBlock(template) {
                 break;
             case "ifclose":
                 if (temp_block.length == 1) {
-                    const lastitem2 = temp_block.pop();
-                    if (lastitem2) {
-                        let content3 = lastitem2.type == "if" ? template.substring(lastitem2.index + lastitem2.length, item.index + item.length) : template.substring(lastitem2.index + lastitem2.length, item.index);
+                    const lastitem = temp_block.pop();
+                    if (lastitem) {
+                        let content = lastitem.type == "if" ? template.substring(lastitem.index + lastitem.length, item.index + item.length) : template.substring(lastitem.index + lastitem.length, item.index);
+                        const test = parseValues(lastitem.condition ?? "");
                         blocks.push({
-                            type: lastitem2.type,
-                            condition: lastitem2.condition ? new Function("data", `return !!(${lastitem2.condition})`) : undefined,
-                            content: parse(content3),
-                            str_condition: lastitem2.condition
+                            type: lastitem.type,
+                            condition: lastitem.condition ? new Function(...test, `return !!(${lastitem.condition})`) : undefined,
+                            content: parse(content),
+                            str_condition: lastitem.condition,
+                            values: test.map((item)=>{
+                                return {
+                                    name: item,
+                                    fn: new Function("data", "return this." + item)
+                                };
+                            })
                         });
                     }
                 }
@@ -215,12 +311,12 @@ function parse(template) {
                 }
             case "each":
                 {
-                    const content1 = template.substring((first_block?.index) + first_block[0].length, closing_block.index);
+                    const content = template.substring((first_block?.index) + first_block[0].length, closing_block.index);
                     blocks.push({
                         block_start: first_block.groups?.block_start,
                         block_value: first_block.groups?.block_value,
                         fn: first_block.groups?.block_value ? new Function("data", `return this.${first_block.groups?.block_value}`) : undefined,
-                        block_content: parse(content1),
+                        block_content: parse(content),
                         index: first_block?.index,
                         index_end: closing_block.index + closing_block?.length + first_block[0].length
                     });
@@ -281,12 +377,12 @@ const entity = {
     "<": "&lt;",
     ">": "&gt;",
     '"': "&quot;",
-    "'": "&#x27;",
+    "'": "&#39;",
     "`": "&#x60;"
 };
-function escape(text) {
+function replaceChar(c) {
     let result = "";
-    let text_left = text;
+    let text_left = c;
     let m;
     while(m = ESCAPE_REGEX.exec(text_left)){
         result += text_left.slice(0, m.index) + entity[m[0]];
@@ -294,10 +390,16 @@ function escape(text) {
     }
     return result + text_left;
 }
+function escape(text) {
+    if (!ESCAPE_REGEX.test(text)) return text;
+    return replaceChar(text);
+}
 const COMPILE_OPTIONS = {
     escape: true
 };
+const layouts = new Map();
 class renderObject {
+    template;
     options;
     compiled;
     data;
@@ -307,6 +409,11 @@ class renderObject {
         this.template = template;
         this.options = COMPILE_OPTIONS;
         this.render_cache = {};
+        this.layouts = (name)=>{
+            const layout = layouts.get(name);
+            if (!layout) throw new Error("Layout not found: " + name);
+            return layout(this.current_data ?? this.data);
+        };
         this.stringCache = (item)=>{
             const name = item.var;
             return this.render_cache[name] = helpers[item.helper] ? ()=>helpers[item.helper](this.getData(item?.fn)) : ()=>{
@@ -327,8 +434,13 @@ class renderObject {
                                 case undefined:
                                     return this.render(item.content);
                                 default:
-                                    if (this.getData(item.condition)) {
-                                        return this.render(item.content);
+                                    try {
+                                        const data = item.values.map((v)=>this.getData(v.fn));
+                                        if (item.condition.apply(this, data)) {
+                                            return this.render(item.content);
+                                        }
+                                    } catch (error) {
+                                        console.error("Error in condition: " + item.str_condition);
                                     }
                                     break;
                             }
@@ -361,6 +473,9 @@ class renderObject {
         this.render = (tree)=>{
             let html = "";
             switch(tree.type){
+                case "layout":
+                    html += this.layouts(tree.content);
+                    break;
                 case "block":
                     html += this.renderBlock(tree.content);
                     break;
@@ -379,8 +494,8 @@ class renderObject {
                     }
                     break;
                 case "items":
-                    for (const item1 of tree.childs){
-                        html += this.render(item1);
+                    for (const item of tree.childs){
+                        html += this.render(item);
                     }
                     break;
                 case "item":
@@ -410,17 +525,20 @@ class renderObject {
         }
         return data;
     }
+    layouts;
     stringCache;
     renderString;
     renderBlock;
     renderForeach;
     render;
     start;
-    template;
 }
 function compile(template, options = COMPILE_OPTIONS) {
     const compiled = new renderObject(template, options);
     return compiled.start;
+}
+function registerLayout(name, content) {
+    layouts.set(name, compile(content));
 }
 const compiled_list = new Map();
 function renderTemplate(key, data, template) {
@@ -437,4 +555,4 @@ registerHelper("JSON", (data)=>{
 registerHelper("raw", (data)=>{
     return data;
 });
-export { renderTemplate as renderTemplate, compile as compile, registerHelper as registerHelper };
+export { renderTemplate as renderTemplate, compile as compile, registerHelper as registerHelper, registerLayout as registerLayout };
